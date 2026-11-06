@@ -3,7 +3,8 @@
 Work-in-progress postmarketOS port for `xiaomi-redwood` (Snapdragon 778G, SM7325), using the
 mainline `linux-postmarketos-qcom-sc7280` kernel.
 
-**Status: does not boot yet.** These are starting files only; values marked `TODO` haven't been checked on hardware.
+**Status: first-boot candidate, untested on hardware.** The device tree targets
+simple-framebuffer, UFS, USB networking, buttons and touchscreen.
 
 ## Layout
 
@@ -11,7 +12,8 @@ mainline `linux-postmarketos-qcom-sc7280` kernel.
 |---|---|
 | `device-xiaomi-redwood/` | pmaports device package, based on `device-nothing-spacewar` |
 | `firmware-xiaomi-redwood/` | firmware package (blobs repo still to be created) |
-| `dts/` | mainline device tree skeleton for sc7280-mainline/linux |
+| `dts/` | mainline device tree for sc7280-mainline/linux |
+| `kernel/` | patch adding the DTS to the kernel, plus a script to apply it (and simpledrm) to pmaports |
 | `docs/BRINGUP.md` | step-by-step bring-up checklist |
 
 ## Using with pmbootstrap
@@ -19,10 +21,13 @@ mainline `linux-postmarketos-qcom-sc7280` kernel.
 ```sh
 pmbootstrap init                       # pick any device first so pmaports is cloned
 cp -r device-xiaomi-redwood firmware-xiaomi-redwood "$(pmbootstrap config aports)/device/testing/"
-pmbootstrap checksum device-xiaomi-redwood
+kernel/apply-to-pmaports.sh
+pmbootstrap checksum device-xiaomi-redwood linux-postmarketos-qcom-sc7280
 pmbootstrap init                       # now choose vendor "xiaomi", device "redwood"
 pmbootstrap install
-pmbootstrap flasher flash_rootfs
+pmbootstrap flasher boot               # RAM-only test boot, nothing written
+# once it works:
+pmbootstrap flasher flash_rootfs       # overwrites userdata!
 pmbootstrap flasher flash_kernel
 ```
 
