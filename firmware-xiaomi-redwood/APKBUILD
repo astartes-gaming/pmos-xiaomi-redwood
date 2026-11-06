@@ -1,0 +1,21 @@
+# Maintainer: TODO <you@example.com>
+pkgname=firmware-xiaomi-redwood
+pkgver=1
+pkgrel=0
+pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
+# TODO: create a repo with the blobs extracted from stock firmware
+# (modem, adsp, cdsp, wpss, venus, ipa, a660_zap) and point _commit at it.
+url="https://github.com/TODO/firmware-xiaomi-redwood"
+arch="aarch64"
+license="proprietary"
+options="!check !strip !archcheck !tracedeps pmb:cross-native"
+_commit="TODO"
+source="$pkgname-$_commit.tar.gz::$url/archive/$_commit/$pkgname-$_commit.tar.gz"
+builddir="$srcdir/$pkgname-$_commit"
+
+package() {
+	mkdir -p "$pkgdir"
+	find . -type f -exec install -Dm644 {} "$pkgdir"/{} \;
+}
+
+sha512sums=""

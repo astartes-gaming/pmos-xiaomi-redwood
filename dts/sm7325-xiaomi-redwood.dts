@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
+ *
+ * Skeleton device tree for the sc7280-mainline kernel
+ * (https://github.com/sc7280-mainline/linux). Start by copying
+ * sm7325-nothing-spacewar.dts or sm7325-xiaomi-taoyao.dts from that tree
+ * and replacing the device-specific parts listed below. Place this file at
+ * arch/arm64/boot/dts/qcom/ and add it to the Makefile.
+ */
+
+/dts-v1/;
+
+#include "sm7325.dtsi"
+
+/ {
+	model = "Xiaomi POCO X5 Pro 5G";
+	compatible = "xiaomi,redwood", "qcom,sm7325";
+	chassis-type = "handset";
+
+	/*
+	 * TODO, in rough bring-up order:
+	 *  - reserved-memory map (from the downstream DT / /proc/iomem)
+	 *  - simple-framebuffer for early display (1080x2400)
+	 *  - PMIC regulators (pm7325, pm8350c, pmk8350, pmr735a)
+	 *  - UFS storage, USB (peripheral mode for SSH over USB)
+	 *  - gpio-keys (volume up/down), power key
+	 *  - display panel + DSI (AMOLED, 120 Hz) and touchscreen
+	 *  - Wi-Fi/BT (WCN6750), remoteprocs (adsp, cdsp, mpss, wpss)
+	 *  - battery / charger, audio, sensors, cameras
+	 */
+};
