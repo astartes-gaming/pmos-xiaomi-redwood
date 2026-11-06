@@ -41,6 +41,9 @@ deviceinfo_flash_offset_ramdisk="0x01000000"
 deviceinfo_flash_offset_second="0x00000000"
 deviceinfo_flash_offset_tags="0x00000100"
 deviceinfo_rootfs_image_sector_size="4096"
-# TODO: confirm the super partition node on redwood (`ls -l /dev/block/by-name/super` from TWRP/adb)
-deviceinfo_super_partitions="/dev/sda6"
 deviceinfo_flash_sparse="true"
+
+# Partitions confirmed via `fastboot getvar all` on a 256 GB unit:
+# boot_a/b 192 MiB, vendor_boot_a/b 96 MiB, dtbo_a/b 24 MiB, super 8.5 GiB (raw),
+# userdata ~225 GiB (f2fs). Rootfs goes to userdata (pmbootstrap default),
+# leaving Android in super untouched.
