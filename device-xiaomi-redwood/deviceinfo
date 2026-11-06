@@ -47,3 +47,7 @@ deviceinfo_flash_sparse="true"
 # boot_a/b 192 MiB, vendor_boot_a/b 96 MiB, dtbo_a/b 24 MiB, super 8.5 GiB (raw),
 # userdata ~225 GiB (f2fs). Rootfs goes to userdata (pmbootstrap default),
 # leaving Android in super untouched.
+
+# Stock vbmeta verifies boot; pmbootstrap flasher flash_vbmeta writes one with
+# verification disabled so a modified boot image is allowed to start.
+deviceinfo_flash_fastboot_partition_vbmeta="vbmeta"
