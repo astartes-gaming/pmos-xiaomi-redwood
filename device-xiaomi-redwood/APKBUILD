@@ -11,7 +11,6 @@ options="!check !archcheck"
 depends="
 	alsa-ucm-conf-qcom-sc7280
 	firmware-qcom-adreno-a660
-	firmware-xiaomi-redwood
 	linux-firmware-ath11k
 	linux-firmware-qca
 	linux-postmarketos-qcom-sc7280
