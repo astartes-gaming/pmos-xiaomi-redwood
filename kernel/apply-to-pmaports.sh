@@ -10,4 +10,7 @@ grep -q 0001-arm64-dts-qcom-add-xiaomi-redwood.patch "$K/APKBUILD" || \
 	sed -i 's|^\t\$_config$|\t$_config\n\t0001-arm64-dts-qcom-add-xiaomi-redwood.patch|' "$K/APKBUILD"
 grep -q DRM_SIMPLEDRM "$K/APKBUILD" || \
 	sed -i 's|^\tcp "\$srcdir/config-\$_flavor.\$arch" .config$|&\n\t# redwood bring-up: no panel driver yet, use the bootloader framebuffer\n\t./scripts/config --enable SYSFB_SIMPLEFB --enable DRM_SIMPLEDRM\n\tmake ARCH="$_carch" LLVM=1 olddefconfig|' "$K/APKBUILD"
+# Bump pkgrel far above upstream so pmbootstrap builds this locally
+# instead of installing the prebuilt kernel (which lacks the redwood DTB).
+sed -i 's/^pkgrel=[0-9]*$/pkgrel=100/' "$K/APKBUILD"
 echo "Patched $K/APKBUILD; now run: pmbootstrap checksum linux-postmarketos-qcom-sc7280"
