@@ -35,5 +35,7 @@ package() {
 	devicepkg_package $startdir $pkgname
 }
 
-# Regenerate with: pmbootstrap checksum device-xiaomi-redwood
-sha512sums=""
+sha512sums="
+9236febe446b997d73e61d726e98fab09bd3e09df6970425ccc505eeea17ed07bd0ab7ab56bafec52301cfbd2ccbfb545269e59a5c7390b1a62ee04f62bcde28  deviceinfo
+c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8ef5d68e67c625d551e67c790ea01b103fcf38848e8aebfdf1  modules-initfs
+"
