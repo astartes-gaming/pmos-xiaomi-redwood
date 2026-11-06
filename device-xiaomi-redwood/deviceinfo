@@ -26,7 +26,12 @@ deviceinfo_screen_height="2400"
 deviceinfo_flash_method="fastboot"
 
 deviceinfo_generate_bootimg="true"
-# TODO: verify all values below from the stock boot.img header
+# Stock redwood uses boot header v3 + vendor_boot (A/B), pagesize 4096, base 0x0
+# (crdroidandroid/android_device_xiaomi_redwood BoardConfig.mk).
+# Header v2 with appended DTB is used here like nothing-spacewar (same SoC
+# family, also v3 stock); Qualcomm ABL usually still accepts v2 images.
+# If the phone refuses to boot it, switch to header v3 + vendor_boot.
+deviceinfo_kernel_cmdline="console=ttyMSM0,115200n8"
 deviceinfo_header_version="2"
 deviceinfo_flash_pagesize="4096"
 deviceinfo_flash_offset_base="0x00000000"
