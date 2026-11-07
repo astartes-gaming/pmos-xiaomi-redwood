@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Xiaomi POCO X5 Pro 5G (redwood), variant with FocalTech FT3680 touch.
+ * Redwood ships with either a Goodix Berlin-D or a FocalTech FT3680 controller
+ * (downstream lists both on the same SPI bus).
+ */
+
+#include "sm7325-xiaomi-redwood.dts"
+
+&touchscreen {
+	compatible = "focaltech,fts_ts";
+
+	/delete-property/ interrupts-extended;
+	/delete-property/ reset-gpios;
+	/delete-property/ avdd-supply;
+	/delete-property/ vddio-supply;
+
+	interrupts-extended = <&tlmm 81 IRQ_TYPE_EDGE_FALLING>;
+	/* the vendor driver drives reset as a raw level, same as nothing-spacewar */
+	reset-gpios = <&tlmm 105 GPIO_ACTIVE_HIGH>;
+	focaltech,irq-gpio = <&tlmm 81 GPIO_ACTIVE_LOW>;
+	focaltech,display-coords = <0 0 1080 2400>;
+	focaltech,max-touch-number = <10>;
+
+	vdd-supply = <&vreg_ts_avdd>;
+	iovdd-supply = <&vreg_l2c_1p8>;
+};

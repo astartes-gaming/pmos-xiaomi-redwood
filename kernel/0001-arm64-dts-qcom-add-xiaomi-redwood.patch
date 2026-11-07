@@ -1,27 +1,62 @@
 From: diegosace2000 <diegosace2000@users.noreply.github.com>
 Subject: [PATCH] arm64: dts: qcom: add Xiaomi POCO X5 Pro 5G (redwood)
 
-Minimal bring-up device tree: simple-framebuffer, UFS, USB peripheral,
-buttons, touchscreen. Based on sm7325-xiaomi-taoyao.
+Bring-up device trees for redwood (Goodix and FocalTech touch variants)
+and disable FocalTech touch firmware auto-upgrade, whose bundled image is
+for the Nothing Phone (1).
 ---
 diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
-index 9945618..982e83f 100644
+index 9945618..5805dbf 100644
 --- a/arch/arm64/boot/dts/qcom/Makefile
 +++ b/arch/arm64/boot/dts/qcom/Makefile
-@@ -353,6 +353,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-motorola-dubai-csot.dtb
+@@ -353,6 +353,8 @@ dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-motorola-dubai-csot.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-motorola-dubai-tianma.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-nothing-spacewar.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-xiaomi-taoyao.dtb
 +dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-xiaomi-redwood.dtb
++dtb-$(CONFIG_ARCH_QCOM)	+= sm7325-xiaomi-redwood-ft.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8150-hdk.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8150-microsoft-surface-duo.dtb
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8150-mtp.dtb
+diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts
+new file mode 100644
+index 0000000..a46b5d1
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts
+@@ -0,0 +1,27 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Xiaomi POCO X5 Pro 5G (redwood), variant with FocalTech FT3680 touch.
++ * Redwood ships with either a Goodix Berlin-D or a FocalTech FT3680 controller
++ * (downstream lists both on the same SPI bus).
++ */
++
++#include "sm7325-xiaomi-redwood.dts"
++
++&touchscreen {
++	compatible = "focaltech,fts_ts";
++
++	/delete-property/ interrupts-extended;
++	/delete-property/ reset-gpios;
++	/delete-property/ avdd-supply;
++	/delete-property/ vddio-supply;
++
++	interrupts-extended = <&tlmm 81 IRQ_TYPE_EDGE_FALLING>;
++	/* the vendor driver drives reset as a raw level, same as nothing-spacewar */
++	reset-gpios = <&tlmm 105 GPIO_ACTIVE_HIGH>;
++	focaltech,irq-gpio = <&tlmm 81 GPIO_ACTIVE_LOW>;
++	focaltech,display-coords = <0 0 1080 2400>;
++	focaltech,max-touch-number = <10>;
++
++	vdd-supply = <&vreg_ts_avdd>;
++	iovdd-supply = <&vreg_l2c_1p8>;
++};
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 new file mode 100644
-index 0000000..5cee238
+index 0000000..0926f3a
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
-@@ -0,0 +1,794 @@
+@@ -0,0 +1,795 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
@@ -525,9 +560,10 @@ index 0000000..5cee238
 +			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 +		};
 +
++		/* redwood: touch IO supply, keep at 1.8 V (downstream vdd-supply = <&L2C>) */
 +		vreg_l2c_1p8: ldo2 {
 +			regulator-name = "vreg_l2c_1p8";
-+			regulator-min-microvolt = <1620000>;
++			regulator-min-microvolt = <1800000>;
 +			regulator-max-microvolt = <1980000>;
 +			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 +		};
@@ -731,7 +767,7 @@ index 0000000..5cee238
 +	 * Downstream lists "goodix,brl-d" (Berlin-D) and a FocalTech FT3680
 +	 * alternative; units may ship with either. GT9916 is Berlin-D.
 +	 */
-+	touchscreen@0 {
++	touchscreen: touchscreen@0 {
 +		compatible = "goodix,gt9916";
 +		reg = <0>;
 +
@@ -816,3 +852,16 @@ index 0000000..5cee238
 +
 +	status = "okay";
 +};
+diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_common.h b/drivers/input/touchscreen/focaltech_touch/focaltech_common.h
+index ff01a64..2eca7ed 100644
+--- a/drivers/input/touchscreen/focaltech_touch/focaltech_common.h
++++ b/drivers/input/touchscreen/focaltech_touch/focaltech_common.h
+@@ -17,7 +17,7 @@
+ #define __LINUX_FOCALTECH_COMMON_H__
+ 
+ #define FTS_CHIP_TYPE 0x3680008A
+-#define FTS_AUTO_UPGRADE_EN 1
++#define FTS_AUTO_UPGRADE_EN 0 /* never flash the bundled (Nothing Phone 1) touch firmware onto other devices */
+ #define FTS_GET_MODULE_NUM 0
+ 
+ /*
