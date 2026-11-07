@@ -171,6 +171,34 @@ static int m20_42_0d_0b_off(struct m20_42_0d_0b *ctx)
 	return dsi_ctx.accum_err;
 }
 
+static void m20_42_0d_0b_dump_status(struct m20_42_0d_0b *ctx, const char *when)
+{
+	struct mipi_dsi_device *dsi = ctx->dsi;
+	u8 pm = 0, sig = 0, diag = 0, errs[2] = { 0 };
+	int r1, r2, r3, r4;
+
+	r1 = mipi_dsi_dcs_get_power_mode(dsi, &pm);
+	r2 = mipi_dsi_dcs_read(dsi, MIPI_DCS_GET_SIGNAL_MODE, &sig, 1);
+	r3 = mipi_dsi_dcs_read(dsi, MIPI_DCS_GET_DIAGNOSTIC_RESULT, &diag, 1);
+	r4 = mipi_dsi_dcs_read(dsi, MIPI_DCS_GET_ERROR_COUNT_ON_DSI, errs, 1);
+	dev_info(&dsi->dev,
+		 "%s: power=0x%02x(%d) signal=0x%02x(%d) diag=0x%02x(%d) dsi_errs=0x%02x(%d)\n",
+		 when, pm, r1, sig, r2, diag, r3, errs[0], r4);
+}
+
+static int m20_42_0d_0b_enable(struct drm_panel *panel)
+{
+	struct m20_42_0d_0b *ctx = to_m20_42_0d_0b(panel);
+
+	m20_42_0d_0b_dump_status(ctx, "enable+0ms");
+	msleep(100);
+	m20_42_0d_0b_dump_status(ctx, "enable+100ms");
+	msleep(1000);
+	m20_42_0d_0b_dump_status(ctx, "enable+1100ms");
+
+	return 0;
+}
+
 static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 {
 	struct m20_42_0d_0b *ctx = to_m20_42_0d_0b(panel);
@@ -207,13 +235,8 @@ static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 		goto err;
 	}
 
-	{
-		u8 mode = 0;
-		int r = mipi_dsi_dcs_get_power_mode(ctx->dsi, &mode);
-
-		/* 0x9c = booster on, sleep out, normal mode, display on */
-		dev_info(&ctx->dsi->dev, "panel power mode: ret=%d mode=0x%02x\n", r, mode);
-	}
+	/* 0x9c = booster on, sleep out, normal mode, display on */
+	m20_42_0d_0b_dump_status(ctx, "prepare");
 
 	return 0;
 
@@ -262,6 +285,7 @@ static int m20_42_0d_0b_get_modes(struct drm_panel *panel,
 
 static const struct drm_panel_funcs m20_42_0d_0b_panel_funcs = {
 	.prepare = m20_42_0d_0b_prepare,
+	.enable = m20_42_0d_0b_enable,
 	.unprepare = m20_42_0d_0b_unprepare,
 	.get_modes = m20_42_0d_0b_get_modes,
 };
