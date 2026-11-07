@@ -395,10 +395,13 @@
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 
+		/* redwood panel: dvdd 1.23-1.25 V */
 		vreg_l16b_1p2: ldo16 {
 			regulator-name = "vreg_l16b_1p2";
-			regulator-min-microvolt = <1100000>;
-			regulator-max-microvolt = <1300000>;
+			regulator-min-microvolt = <1232000>;
+			regulator-max-microvolt = <1256000>;
+			regulator-always-on;
+			regulator-boot-on;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 
@@ -609,18 +612,24 @@
 		};
 
 		vdd_io_oled:
+		/* redwood panel: vddio 1.8 V */
 		vreg_l12c_1p8: ldo12 {
 			regulator-name = "vreg_l12c_1p8";
-			regulator-min-microvolt = <1650000>;
-			regulator-max-microvolt = <2000000>;
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-always-on;
+			regulator-boot-on;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 
 		vdd_oled:
+		/* redwood panel: vdd 3.0 V */
 		vreg_l13c_3p0: ldo13 {
 			regulator-name = "vreg_l13c_3p0";
-			regulator-min-microvolt = <2700000>;
-			regulator-max-microvolt = <3544000>;
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			regulator-always-on;
+			regulator-boot-on;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 
