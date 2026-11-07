@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Replace the device tree in an Android boot image (header v2).
 
-Usage: swap_dtb.py IN_boot.img NEW.dtb OUT_boot.img
+Usage: swap_dtb.py IN_boot.img NEW.dtb OUT_boot.img [NEW_kernel_Image.gz]
+
+With a fourth argument the kernel is replaced too (ramdisk and cmdline kept).
 
 Handles both places pmbootstrap puts the DTB for redwood: appended to the
 kernel (deviceinfo_append_dtb) and the separate v2 DTB section.
@@ -21,7 +23,7 @@ def pad(b, page):
 
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         sys.exit(__doc__)
     img = open(sys.argv[1], "rb").read()
     new_dtb = open(sys.argv[2], "rb").read()
@@ -53,7 +55,10 @@ def main():
         idx = kernel.rfind(FDT_MAGIC, 0, idx)
     if idx <= 0:
         sys.exit("could not find the DTB appended to the kernel")
-    kernel = kernel[:idx] + new_dtb
+    if len(sys.argv) == 5:
+        kernel = open(sys.argv[4], "rb").read() + new_dtb
+    else:
+        kernel = kernel[:idx] + new_dtb
 
     header = bytearray(img[:header_size])
     struct.pack_into("<I", header, 8, len(kernel))

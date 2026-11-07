@@ -17,6 +17,7 @@
 #include <linux/mod_devicetable.h>
 #include <linux/module.h>
 #include <linux/regulator/consumer.h>
+#include <linux/slab.h>
 #include <linux/uaccess.h>
 
 #include <video/mipi_display.h>
@@ -59,104 +60,6 @@ static void m20_42_0d_0b_reset(struct m20_42_0d_0b *ctx)
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
 	msleep(20);
 }
-
-/*
- * Bring-up debug interface: /sys/kernel/debug/panel-m20/dcs
- *   echo "w 11"            > dcs   DCS write (command + params, hex)
- *   echo "r 0a 1"          > dcs   DCS read: command, length
- *   echo "g 29"            > dcs   generic write (hex bytes)
- *   echo "reset"           > dcs   pulse reset with the vendor sequence
- *   echo "lp" / "hs"       > dcs   send following commands in LP / HS
- *   cat dcs                        result of the last command
- */
-static ssize_t m20_dbg_write(struct file *file, const char __user *ubuf,
-			     size_t len, loff_t *ppos)
-{
-	struct m20_42_0d_0b *ctx = file->private_data;
-	struct mipi_dsi_device *dsi = ctx->dsi;
-	char buf[256], *p = buf, *tok;
-	u8 data[64];
-	int n = 0, ret = 0;
-	char op;
-
-	if (len >= sizeof(buf))
-		return -EINVAL;
-	if (copy_from_user(buf, ubuf, len))
-		return -EFAULT;
-	buf[len] = 0;
-	strim(buf);
-
-	if (!strcmp(buf, "reset")) {
-		m20_42_0d_0b_reset(ctx);
-		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "reset done\n");
-		return len;
-	}
-	if (!strcmp(buf, "lp") || !strcmp(buf, "hs")) {
-		if (buf[0] == 'l')
-			dsi->mode_flags |= MIPI_DSI_MODE_LPM;
-		else
-			dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
-		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "mode %s\n", buf);
-		return len;
-	}
-
-	tok = strsep(&p, " ");
-	if (!tok || strlen(tok) != 1)
-		return -EINVAL;
-	op = tok[0];
-	while ((tok = strsep(&p, " ")) && n < ARRAY_SIZE(data)) {
-		if (!*tok)
-			continue;
-		if (kstrtou8(tok, 16, &data[n++]))
-			return -EINVAL;
-	}
-	if (!n)
-		return -EINVAL;
-
-	switch (op) {
-	case 'w':
-		ret = mipi_dsi_dcs_write(dsi, data[0], data + 1, n - 1);
-		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "dcs write %02x (%d params): %d\n",
-			  data[0], n - 1, ret);
-		break;
-	case 'g':
-		ret = mipi_dsi_generic_write(dsi, data, n);
-		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "generic write (%d bytes): %d\n", n, ret);
-		break;
-	case 'r': {
-		u8 rx[32] = { 0 };
-		int rlen = n > 1 ? min_t(int, data[1], sizeof(rx)) : 1;
-		int i, o;
-
-		ret = mipi_dsi_dcs_read(dsi, data[0], rx, rlen);
-		o = scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "dcs read %02x: %d:", data[0], ret);
-		for (i = 0; i < rlen; i++)
-			o += scnprintf(ctx->dbg_out + o, sizeof(ctx->dbg_out) - o, " %02x", rx[i]);
-		scnprintf(ctx->dbg_out + o, sizeof(ctx->dbg_out) - o, "\n");
-		break;
-	}
-	default:
-		return -EINVAL;
-	}
-
-	return ret < 0 ? ret : len;
-}
-
-static ssize_t m20_dbg_read(struct file *file, char __user *ubuf,
-			    size_t len, loff_t *ppos)
-{
-	struct m20_42_0d_0b *ctx = file->private_data;
-
-	return simple_read_from_buffer(ubuf, len, ppos, ctx->dbg_out,
-				       strlen(ctx->dbg_out));
-}
-
-static const struct file_operations m20_dbg_fops = {
-	.open = simple_open,
-	.write = m20_dbg_write,
-	.read = m20_dbg_read,
-	.llseek = default_llseek,
-};
 
 static int m20_42_0d_0b_on(struct m20_42_0d_0b *ctx)
 {
@@ -258,6 +161,132 @@ static int m20_42_0d_0b_on(struct m20_42_0d_0b *ctx)
 
 	return dsi_ctx.accum_err;
 }
+
+/*
+ * Bring-up debug interface: /sys/kernel/debug/panel-m20/dcs
+ *   echo "w 11"            > dcs   DCS write (command + params, hex)
+ *   echo "r 0a 1"          > dcs   DCS read: command, length
+ *   echo "g 29"            > dcs   generic write (hex bytes)
+ *   echo "reset"           > dcs   pulse reset with the vendor sequence
+ *   echo "lp" / "hs"       > dcs   send following commands in LP / HS
+ *   echo "init"            > dcs   rerun the vendor init sequence
+ *   echo "pps"             > dcs   send the DSC PPS + compression mode
+ *   cat dcs                        result of the last command
+ */
+static ssize_t m20_dbg_write(struct file *file, const char __user *ubuf,
+			     size_t len, loff_t *ppos)
+{
+	struct m20_42_0d_0b *ctx = file->private_data;
+	struct mipi_dsi_device *dsi = ctx->dsi;
+	char *buf, *p, *tok;
+	u8 data[160];
+	int n = 0, ret = 0;
+	char op;
+
+	if (len >= 1024)
+		return -EINVAL;
+	buf = memdup_user_nul(ubuf, len);
+	if (IS_ERR(buf))
+		return PTR_ERR(buf);
+	p = buf;
+	strim(buf);
+
+	if (!strcmp(buf, "init") || !strcmp(buf, "pps")) {
+		if (buf[0] == 'i') {
+			ret = m20_42_0d_0b_on(ctx);
+		} else {
+			struct drm_dsc_picture_parameter_set pps;
+			struct mipi_dsi_multi_context dctx = { .dsi = dsi };
+
+			drm_dsc_pps_payload_pack(&pps, &ctx->dsc);
+			mipi_dsi_picture_parameter_set_multi(&dctx, &pps);
+			mipi_dsi_compression_mode_ext_multi(&dctx, true,
+							    MIPI_DSI_COMPRESSION_DSC, 0);
+			ret = dctx.accum_err;
+		}
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "%s: %d\n", buf, ret);
+		kfree(buf);
+		return ret < 0 ? ret : len;
+	}
+
+	if (!strcmp(buf, "reset")) {
+		m20_42_0d_0b_reset(ctx);
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "reset done\n");
+		kfree(buf);
+		return len;
+	}
+	if (!strcmp(buf, "lp") || !strcmp(buf, "hs")) {
+		if (buf[0] == 'l')
+			dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+		else
+			dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "mode %s\n", buf);
+		kfree(buf);
+		return len;
+	}
+
+	tok = strsep(&p, " ");
+	if (!tok || strlen(tok) != 1) {
+		kfree(buf);
+		return -EINVAL;
+	}
+	op = tok[0];
+	while ((tok = strsep(&p, " ")) && n < ARRAY_SIZE(data)) {
+		if (!*tok)
+			continue;
+		if (kstrtou8(tok, 16, &data[n++])) {
+			kfree(buf);
+			return -EINVAL;
+		}
+	}
+	kfree(buf);
+	if (!n)
+		return -EINVAL;
+
+	switch (op) {
+	case 'w':
+		ret = mipi_dsi_dcs_write(dsi, data[0], data + 1, n - 1);
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "dcs write %02x (%d params): %d\n",
+			  data[0], n - 1, ret);
+		break;
+	case 'g':
+		ret = mipi_dsi_generic_write(dsi, data, n);
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "generic write (%d bytes): %d\n", n, ret);
+		break;
+	case 'r': {
+		u8 rx[32] = { 0 };
+		int rlen = n > 1 ? min_t(int, data[1], sizeof(rx)) : 1;
+		int i, o;
+
+		ret = mipi_dsi_dcs_read(dsi, data[0], rx, rlen);
+		o = scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "dcs read %02x: %d:", data[0], ret);
+		for (i = 0; i < rlen; i++)
+			o += scnprintf(ctx->dbg_out + o, sizeof(ctx->dbg_out) - o, " %02x", rx[i]);
+		scnprintf(ctx->dbg_out + o, sizeof(ctx->dbg_out) - o, "\n");
+		break;
+	}
+	default:
+		return -EINVAL;
+	}
+
+	return ret < 0 ? ret : len;
+}
+
+static ssize_t m20_dbg_read(struct file *file, char __user *ubuf,
+			    size_t len, loff_t *ppos)
+{
+	struct m20_42_0d_0b *ctx = file->private_data;
+
+	return simple_read_from_buffer(ubuf, len, ppos, ctx->dbg_out,
+				       strlen(ctx->dbg_out));
+}
+
+static const struct file_operations m20_dbg_fops = {
+	.open = simple_open,
+	.write = m20_dbg_write,
+	.read = m20_dbg_read,
+	.llseek = default_llseek,
+};
 
 static int m20_42_0d_0b_off(struct m20_42_0d_0b *ctx)
 {
