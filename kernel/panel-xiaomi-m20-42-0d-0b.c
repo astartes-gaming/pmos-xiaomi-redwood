@@ -63,7 +63,8 @@ static int m20_42_0d_0b_on(struct m20_42_0d_0b *ctx)
 	ctx->dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
 	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x20);
-	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, MIPI_DCS_SET_DISPLAY_BRIGHTNESS, 0x00, 0x00);
+	/* vendor sends 0x0000 here; bring-up: start visible at ~half brightness */
+	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, MIPI_DCS_SET_DISPLAY_BRIGHTNESS, 0x03, 0xff);
 	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0x6f, 0x01);
 	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, 0x03, 0x01);
 	mipi_dsi_dcs_write_seq_multi(&dsi_ctx, MIPI_DCS_SET_TEAR_ON, 0x00);
@@ -201,6 +202,14 @@ static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 		goto err;
 	}
 
+	{
+		u8 mode = 0;
+		int r = mipi_dsi_dcs_get_power_mode(ctx->dsi, &mode);
+
+		/* 0x9c = booster on, sleep out, normal mode, display on */
+		dev_info(&ctx->dsi->dev, "panel power mode: ret=%d mode=0x%02x\n", r, mode);
+	}
+
 	return 0;
 
 err:
@@ -258,9 +267,8 @@ static int m20_42_0d_0b_bl_update_status(struct backlight_device *bl)
 	u16 brightness = backlight_get_brightness(bl);
 	int ret;
 
-	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
 	ret = mipi_dsi_dcs_set_display_brightness_large(dsi, brightness);
-	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+	dev_info(&dsi->dev, "set brightness %u: ret=%d\n", brightness, ret);
 
 	return ret < 0 ? ret : 0;
 }
