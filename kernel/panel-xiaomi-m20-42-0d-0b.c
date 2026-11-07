@@ -321,11 +321,7 @@ static int m20_42_0d_0b_enable(struct drm_panel *panel)
 {
 	struct m20_42_0d_0b *ctx = to_m20_42_0d_0b(panel);
 
-	m20_42_0d_0b_dump_status(ctx, "enable+0ms");
-	msleep(100);
-	m20_42_0d_0b_dump_status(ctx, "enable+100ms");
-	msleep(1000);
-	m20_42_0d_0b_dump_status(ctx, "enable+1100ms");
+	m20_42_0d_0b_dump_status(ctx, "enable");
 
 	return 0;
 }
@@ -335,7 +331,7 @@ static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 	struct m20_42_0d_0b *ctx = to_m20_42_0d_0b(panel);
 	struct mipi_dsi_multi_context dsi_ctx = { .dsi = ctx->dsi };
 	struct drm_dsc_picture_parameter_set pps;
-	int ret;
+	int ret, attempt;
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(m20_42_0d_0b_supplies),
 				    ctx->supplies);
@@ -343,13 +339,32 @@ static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 		return ret;
 
 	m20_42_0d_0b_reset(ctx);
+	/*
+	 * Commands sent within the vendor's 20 ms after reset are silently
+	 * dropped on this panel (power mode stays 0x0c); give it time to boot.
+	 */
+	msleep(100);
+
+	for (attempt = 0; attempt < 3; attempt++) {
+		u8 pm = 0;
+
+		ret = m20_42_0d_0b_on(ctx);
+		if (ret < 0) {
+			dev_err(&ctx->dsi->dev, "Failed to initialize panel: %d\n", ret);
+			goto err;
+		}
+
+		/* 0x9c = booster on, sleep out, normal mode, display on */
+		if (!mipi_dsi_dcs_get_power_mode(ctx->dsi, &pm) && (pm & 0x10))
+			break;
+		dev_warn(&ctx->dsi->dev, "panel still asleep (0x%02x), resending init\n", pm);
+	}
 
 	/*
-	 * Like the vendor driver (dsi_panel_update_pps before the on-commands),
-	 * configure DSC before the init sequence: with the PPS sent afterwards
-	 * the panel ignores sleep-out and reports power mode 0x0c.
+	 * Send the PPS after the vendor init sequence: its 0x70 register holds
+	 * the vendor (DSC 1.2) parameters, the standard PPS replaces them with
+	 * the ones DPU actually encodes with. Without it the image corrupts.
 	 */
-	ctx->dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	drm_dsc_pps_payload_pack(&pps, &ctx->dsc);
 	mipi_dsi_picture_parameter_set_multi(&dsi_ctx, &pps);
 	mipi_dsi_compression_mode_ext_multi(&dsi_ctx, true,
@@ -360,13 +375,6 @@ static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 		goto err;
 	}
 
-	ret = m20_42_0d_0b_on(ctx);
-	if (ret < 0) {
-		dev_err(&ctx->dsi->dev, "Failed to initialize panel: %d\n", ret);
-		goto err;
-	}
-
-	/* 0x9c = booster on, sleep out, normal mode, display on */
 	m20_42_0d_0b_dump_status(ctx, "prepare");
 
 	return 0;

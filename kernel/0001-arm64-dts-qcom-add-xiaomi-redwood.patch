@@ -963,10 +963,10 @@ index 215f267..7ffda4b 100644
  obj-$(CONFIG_DRM_PANEL_XINPENG_XPP055C272) += panel-xinpeng-xpp055c272.o
 diff --git a/drivers/gpu/drm/panel/panel-xiaomi-m20-42-0d-0b.c b/drivers/gpu/drm/panel/panel-xiaomi-m20-42-0d-0b.c
 new file mode 100644
-index 0000000..cf67640
+index 0000000..89219e0
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-xiaomi-m20-42-0d-0b.c
-@@ -0,0 +1,549 @@
+@@ -0,0 +1,557 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * DRM driver for the Xiaomi "M20 42 0d 0b" DSC video mode AMOLED panel
@@ -1290,11 +1290,7 @@ index 0000000..cf67640
 +{
 +	struct m20_42_0d_0b *ctx = to_m20_42_0d_0b(panel);
 +
-+	m20_42_0d_0b_dump_status(ctx, "enable+0ms");
-+	msleep(100);
-+	m20_42_0d_0b_dump_status(ctx, "enable+100ms");
-+	msleep(1000);
-+	m20_42_0d_0b_dump_status(ctx, "enable+1100ms");
++	m20_42_0d_0b_dump_status(ctx, "enable");
 +
 +	return 0;
 +}
@@ -1304,7 +1300,7 @@ index 0000000..cf67640
 +	struct m20_42_0d_0b *ctx = to_m20_42_0d_0b(panel);
 +	struct mipi_dsi_multi_context dsi_ctx = { .dsi = ctx->dsi };
 +	struct drm_dsc_picture_parameter_set pps;
-+	int ret;
++	int ret, attempt;
 +
 +	ret = regulator_bulk_enable(ARRAY_SIZE(m20_42_0d_0b_supplies),
 +				    ctx->supplies);
@@ -1312,13 +1308,32 @@ index 0000000..cf67640
 +		return ret;
 +
 +	m20_42_0d_0b_reset(ctx);
++	/*
++	 * Commands sent within the vendor's 20 ms after reset are silently
++	 * dropped on this panel (power mode stays 0x0c); give it time to boot.
++	 */
++	msleep(100);
++
++	for (attempt = 0; attempt < 3; attempt++) {
++		u8 pm = 0;
++
++		ret = m20_42_0d_0b_on(ctx);
++		if (ret < 0) {
++			dev_err(&ctx->dsi->dev, "Failed to initialize panel: %d\n", ret);
++			goto err;
++		}
++
++		/* 0x9c = booster on, sleep out, normal mode, display on */
++		if (!mipi_dsi_dcs_get_power_mode(ctx->dsi, &pm) && (pm & 0x10))
++			break;
++		dev_warn(&ctx->dsi->dev, "panel still asleep (0x%02x), resending init\n", pm);
++	}
 +
 +	/*
-+	 * Like the vendor driver (dsi_panel_update_pps before the on-commands),
-+	 * configure DSC before the init sequence: with the PPS sent afterwards
-+	 * the panel ignores sleep-out and reports power mode 0x0c.
++	 * Send the PPS after the vendor init sequence: its 0x70 register holds
++	 * the vendor (DSC 1.2) parameters, the standard PPS replaces them with
++	 * the ones DPU actually encodes with. Without it the image corrupts.
 +	 */
-+	ctx->dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 +	drm_dsc_pps_payload_pack(&pps, &ctx->dsc);
 +	mipi_dsi_picture_parameter_set_multi(&dsi_ctx, &pps);
 +	mipi_dsi_compression_mode_ext_multi(&dsi_ctx, true,
@@ -1329,13 +1344,6 @@ index 0000000..cf67640
 +		goto err;
 +	}
 +
-+	ret = m20_42_0d_0b_on(ctx);
-+	if (ret < 0) {
-+		dev_err(&ctx->dsi->dev, "Failed to initialize panel: %d\n", ret);
-+		goto err;
-+	}
-+
-+	/* 0x9c = booster on, sleep out, normal mode, display on */
 +	m20_42_0d_0b_dump_status(ctx, "prepare");
 +
 +	return 0;
