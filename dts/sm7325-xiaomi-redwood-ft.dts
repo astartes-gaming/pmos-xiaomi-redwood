@@ -21,6 +21,8 @@
 	focaltech,irq-gpio = <&tlmm 81 GPIO_ACTIVE_LOW>;
 	focaltech,display-coords = <0 0 1080 2400>;
 	focaltech,max-touch-number = <10>;
+	/* FT3680 is flashless: Xiaomi firmware is loaded into its RAM at every boot */
+	firmware-name = "focaltech_ts_fw_m20.bin";
 
 	vdd-supply = <&vreg_ts_avdd>;
 	iovdd-supply = <&vreg_l2c_1p8>;

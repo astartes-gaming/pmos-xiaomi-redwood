@@ -21,10 +21,10 @@ index 9945618..5805dbf 100644
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8150-mtp.dtb
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts
 new file mode 100644
-index 0000000..a46b5d1
+index 0000000..b377464
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,29 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G (redwood), variant with FocalTech FT3680 touch.
@@ -48,6 +48,8 @@ index 0000000..a46b5d1
 +	focaltech,irq-gpio = <&tlmm 81 GPIO_ACTIVE_LOW>;
 +	focaltech,display-coords = <0 0 1080 2400>;
 +	focaltech,max-touch-number = <10>;
++	/* FT3680 is flashless: Xiaomi firmware is loaded into its RAM at every boot */
++	firmware-name = "focaltech_ts_fw_m20.bin";
 +
 +	vdd-supply = <&vreg_ts_avdd>;
 +	iovdd-supply = <&vreg_l2c_1p8>;
@@ -1524,16 +1526,85 @@ index 0000000..89219e0
 +
 +MODULE_DESCRIPTION("DRM driver for Xiaomi M20 42 0d 0b DSC video mode panel (redwood)");
 +MODULE_LICENSE("GPL");
-diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_common.h b/drivers/input/touchscreen/focaltech_touch/focaltech_common.h
-index ff01a64..2eca7ed 100644
---- a/drivers/input/touchscreen/focaltech_touch/focaltech_common.h
-+++ b/drivers/input/touchscreen/focaltech_touch/focaltech_common.h
-@@ -17,7 +17,7 @@
- #define __LINUX_FOCALTECH_COMMON_H__
+diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c b/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c
+index 643b8e2..019a1aa 100644
+--- a/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c
++++ b/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c
+@@ -13,10 +13,11 @@
+  * GNU General Public License for more details.
+  */
  
- #define FTS_CHIP_TYPE 0x3680008A
--#define FTS_AUTO_UPGRADE_EN 1
-+#define FTS_AUTO_UPGRADE_EN 0 /* never flash the bundled (Nothing Phone 1) touch firmware onto other devices */
- #define FTS_GET_MODULE_NUM 0
++#include <linux/of.h>
+ #include "focaltech_core.h"
+ #include "focaltech_flash.h"
  
- /*
+-#define FTS_FW_REQUEST_SUPPORT		0
++#define FTS_FW_REQUEST_SUPPORT		1
+ /* Example: focaltech_ts_fw_tianma.bin */
+ #define FTS_FW_NAME_PREX_WITH_REQUEST	"focaltech_ts_fw_"
+ #define FTS_READ_BOOT_ID_TIMEOUT	3
+@@ -775,6 +776,21 @@ static int fts_read_file_default(char *file_name, u8 **file_buf)
+ }
+ */
+ 
++/* Firmware file: DT "firmware-name" if present, else focaltech_ts_fw_<vendor>.bin */
++static bool fts_fw_name(struct fts_upgrade *upg, char *buf, size_t len)
++{
++	const char *dt_name = NULL;
++
++	if (!of_property_read_string(upg->ts_data->dev->of_node,
++				     "firmware-name", &dt_name)) {
++		snprintf(buf, len, "%s", dt_name);
++		return true;
++	}
++	snprintf(buf, len, "%s%s.bin", FTS_FW_NAME_PREX_WITH_REQUEST,
++		 upg->module_info->vendor_name);
++	return false;
++}
++
+ static int fts_read_file_request_firmware(char *file_name, u8 **file_buf)
+ {
+ 	int ret = 0;
+@@ -942,10 +958,13 @@ int fts_fw_resume(bool need_reset)
+ 	}
+ 
+ 	if (FTS_FW_REQUEST_SUPPORT) {
+-		snprintf(fwname, FILE_NAME_LENGTH, "%s%s.bin",
+-			 FTS_FW_NAME_PREX_WITH_REQUEST,
+-			 upg->module_info->vendor_name);
++		bool dt_fw = fts_fw_name(upg, fwname, FILE_NAME_LENGTH);
++
+ 		ret = request_firmware(&fw, fwname, upg->ts_data->dev);
++		if (ret && dt_fw) {
++			dev_err(fts_data->dev, "firmware(%s) missing, not using bundled fw\n", fwname);
++			return ret;
++		}
+ 		if (ret == 0) {
+ 			dev_info(fts_data->dev,
+ 				 "firmware(%s) request successfully", fwname);
+@@ -1075,8 +1094,7 @@ static int fts_get_fw_file_via_request_firmware(struct fts_upgrade *upg)
+ 	u8 *tmpbuf = NULL;
+ 	char fwname[FILE_NAME_LENGTH] = { 0 };
+ 
+-	snprintf(fwname, FILE_NAME_LENGTH, "%s%s.bin",
+-		 FTS_FW_NAME_PREX_WITH_REQUEST, upg->module_info->vendor_name);
++	fts_fw_name(upg, fwname, FILE_NAME_LENGTH);
+ 
+ 	ret = request_firmware(&fw, fwname, upg->ts_data->dev);
+ 	if (0 == ret) {
+@@ -1149,9 +1167,15 @@ static int fts_fwupg_get_fw_file(struct fts_upgrade *upg)
+ 	}
+ 
+ 	if (FTS_FW_REQUEST_SUPPORT) {
++		char name[FILE_NAME_LENGTH];
++
+ 		msleep(500);
+ 		ret = fts_get_fw_file_via_request_firmware(upg);
+ 		if (ret != 0) {
++			if (fts_fw_name(upg, name, sizeof(name))) {
++				dev_err(fts_data->dev, "firmware(%s) missing, not using bundled fw", name);
++				return -ENOENT;
++			}
+ 			get_fw_i_flag = true;
+ 		}
+ 	} else {
