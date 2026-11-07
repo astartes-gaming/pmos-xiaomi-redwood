@@ -3,8 +3,22 @@
 Work-in-progress postmarketOS port for `xiaomi-redwood` (Snapdragon 778G, SM7325), using the
 mainline `linux-postmarketos-qcom-sc7280` kernel.
 
-**Status: first-boot candidate, untested on hardware.** The device tree targets
-simple-framebuffer, UFS, USB networking, buttons and touchscreen.
+**Status: boots to a working console with display and touch (RAM boot via `fastboot boot`).**
+
+| Works | Notes |
+|---|---|
+| Display | own DSC panel driver (`kernel/panel-xiaomi-m20-42-0d-0b.c`), 1080x2400@120 |
+| Touch | FocalTech FT3680; firmware loaded into chip RAM at boot (see below) |
+| USB networking / SSH, UFS, buttons | |
+
+| Not yet | |
+|---|---|
+| GPU, audio, Wi-Fi/BT, modem, battery/charging, cameras | |
+
+Bring-up requirements found on this device:
+- `dtbo_a` **and** `dtbo_b` must be erased, or the bootloader hangs.
+- After any `fastboot flash`/`erase`, run `fastboot reboot bootloader` before `fastboot boot`.
+- Touch firmware `focaltech_ts_fw_m20.bin` (from the stock vendor partition, `/vendor/firmware`) must be in `/lib/firmware` on the rootfs. It is proprietary and not part of this repo.
 
 ## Layout
 
