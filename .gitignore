@@ -3,3 +3,4 @@
 *.tar.gz
 firmware-xiaomi-redwood/*.bin
 firmware-xiaomi-redwood/*.mbn
+firmware-xiaomi-redwood/*.elf

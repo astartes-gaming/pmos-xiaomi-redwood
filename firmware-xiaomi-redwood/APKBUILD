@@ -1,12 +1,12 @@
 # Maintainer: diegosace2000 <diegosace2000@users.noreply.github.com>
 #
 # Proprietary firmware for the Xiaomi POCO X5 Pro 5G (redwood), taken from the
-# stock/Evolution X vendor partition (/vendor/firmware). The blobs are NOT in
-# this repository: place them next to this APKBUILD before building, e.g. with
-#   tools/collect-firmware.sh <vendor.img>
+# stock vendor partition (/vendor/firmware) and the phone's own modem
+# partition (NON-HLOS). The blobs are NOT in this repository: place them next
+# to this APKBUILD before building (tools/collect-firmware.sh).
 pkgname=firmware-xiaomi-redwood
 pkgver=1
-pkgrel=0
+pkgrel=1
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
@@ -15,6 +15,8 @@ options="!check !strip !archcheck !tracedeps pmb:cross-native"
 source="
 	focaltech_ts_fw_m20.bin
 	a660_zap.mbn
+	wpss.mbn
+	bd_m20gl.elf
 "
 
 package() {
@@ -24,9 +26,19 @@ package() {
 	# Adreno 642L zap shader (signed for this device)
 	install -Dm644 "$srcdir"/a660_zap.mbn \
 		"$pkgdir"/lib/firmware/qcom/sm7325/xiaomi/redwood/a660_zap.mbn
+	# Wi-Fi subsystem (WPSS) firmware, from the modem partition
+	install -Dm644 "$srcdir"/wpss.mbn \
+		"$pkgdir"/lib/firmware/qcom/sm7325/xiaomi/redwood/wpss.mbn
+	# WCN6750 board data for redwood global (bd_m20gl.elf). Kept aside until
+	# the ath11k board name is known and board-2.bin can be built from it.
+	install -Dm644 "$srcdir"/bd_m20gl.elf \
+		"$pkgdir"/usr/share/firmware-xiaomi-redwood/bd_m20gl.elf
 }
+
 
 sha512sums="
 e7cb462ded705ac7afb5be76002acc3df66d119b706749bc129bdc8ad97efaa1fd9992a0fe7fe185040ca99e9e26aae9ef62147a2490270aaa74604428502099  focaltech_ts_fw_m20.bin
 9b5ea6aa19666a02d4210cd185512a7a7d01b9421a60ca1184cd69920786b06e80b5803774199a385ad59a05f8e1060f1d35755a03c91aaa8a3218081d21a651  a660_zap.mbn
+4df80c2adcf17bcd68b5d43120ef26d967b07b0dcf0f2a30efb85970aab322ba79f1cd8cc8a4674abd4ec636dc81a4ec584f341cf6932eb8c003552a953830c3  wpss.mbn
+621917b555e713250c3d310b801ed64da8e34cae7b5a78fe75b85efc59560417bfd37f9c51467fe56a1fe9b6f7e12fbe148d6a1b487cbd0fb31bd8ccd6ada8ed  bd_m20gl.elf
 "

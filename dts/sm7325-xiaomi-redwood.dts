@@ -7,9 +7,9 @@
  * adjusted with values from the redwood downstream DT
  * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
  *
- * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU,
+ * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
  * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
- * charger PMIC, pmic-glink, audio, remoteprocs, Wi-Fi/BT.
+ * charger PMIC, pmic-glink, audio, ADSP/CDSP/modem, Bluetooth.
  */
 
 /dts-v1/;
@@ -763,6 +763,12 @@
 	status = "okay";
 };
 
+&remoteproc_wpss {
+	firmware-name = "qcom/sm7325/xiaomi/redwood/wpss.mbn";
+
+	status = "okay";
+};
+
 &spi13 {
 	status = "okay";
 
@@ -854,6 +860,10 @@
 	vdda-phy-supply = <&vdd_a_ufs_0_core>;
 	vdda-pll-supply = <&vdd_a_ufs_0_1p2>;
 
+	status = "okay";
+};
+
+&wifi {
 	status = "okay";
 };
 
