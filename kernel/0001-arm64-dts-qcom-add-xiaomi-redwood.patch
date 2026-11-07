@@ -21,10 +21,10 @@ index 9945618..5805dbf 100644
  dtb-$(CONFIG_ARCH_QCOM)	+= sm8150-mtp.dtb
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts
 new file mode 100644
-index 0000000..b377464
+index 0000000..1cdb8c5
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood-ft.dts
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,31 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G (redwood), variant with FocalTech FT3680 touch.
@@ -46,7 +46,9 @@ index 0000000..b377464
 +	/* the vendor driver drives reset as a raw level, same as nothing-spacewar */
 +	reset-gpios = <&tlmm 105 GPIO_ACTIVE_HIGH>;
 +	focaltech,irq-gpio = <&tlmm 81 GPIO_ACTIVE_LOW>;
-+	focaltech,display-coords = <0 0 1080 2400>;
++	/* Xiaomi "super resolution" reports: 10x coordinates (vendor DT) */
++	focaltech,super-resolution-factors = <10>;
++	focaltech,display-coords = <0 0 10800 24000>;
 +	focaltech,max-touch-number = <10>;
 +	/* FT3680 is flashless: Xiaomi firmware is loaded into its RAM at every boot */
 +	firmware-name = "focaltech_ts_fw_m20.bin";
@@ -1534,6 +1536,117 @@ index 0000000..89219e0
 +
 +MODULE_DESCRIPTION("DRM driver for Xiaomi M20 42 0d 0b DSC video mode panel (redwood)");
 +MODULE_LICENSE("GPL");
+diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_core.c b/drivers/input/touchscreen/focaltech_touch/focaltech_core.c
+index ffdd8d5..794e65f 100644
+--- a/drivers/input/touchscreen/focaltech_touch/focaltech_core.c
++++ b/drivers/input/touchscreen/focaltech_touch/focaltech_core.c
+@@ -564,6 +564,29 @@ static int fts_read_parse_touchdata(struct fts_ts_data *ts_data, u8 *touch_buf)
+ 	return ((touch_buf[FTS_TOUCH_E_NUM] >> 4) & 0x0F);
+ }
+ 
++
++static void fts_decode_point(struct fts_ts_data *ts_data, const u8 *b,
++			     struct ts_event *ev)
++{
++	if (ts_data->pdata->super_resolution == 10) {
++		ev->x = ((b[FTS_TOUCH_OFF_E_XH] & 0x0F) << 11) |
++			(b[FTS_TOUCH_OFF_XL] << 3) |
++			(((b[FTS_TOUCH_OFF_PRE] & 0xC0) >> 6) << 1) |
++			((b[FTS_TOUCH_OFF_E_XH] & 0x20) >> 5);
++		ev->y = ((b[FTS_TOUCH_OFF_ID_YH] & 0x0F) << 11) |
++			(b[FTS_TOUCH_OFF_YL] << 3) |
++			(((b[FTS_TOUCH_OFF_PRE] & 0x30) >> 4) << 1) |
++			((b[FTS_TOUCH_OFF_ID_YH] & 0x10) >> 4);
++		ev->p = b[FTS_TOUCH_OFF_PRE] & 0x0F;
++		ev->area = b[FTS_TOUCH_OFF_AREA] & 0x7F;
++	} else {
++		ev->x = ((b[FTS_TOUCH_OFF_E_XH] & 0x0F) << 8) + b[FTS_TOUCH_OFF_XL];
++		ev->y = ((b[FTS_TOUCH_OFF_ID_YH] & 0x0F) << 8) + b[FTS_TOUCH_OFF_YL];
++		ev->p = b[FTS_TOUCH_OFF_PRE];
++		ev->area = b[FTS_TOUCH_OFF_AREA];
++	}
++}
++
+ static int fts_irq_read_report(struct fts_ts_data *ts_data)
+ {
+ 	int i = 0;
+@@ -601,16 +624,7 @@ static int fts_irq_read_report(struct fts_ts_data *ts_data)
+ 			events[i].id = pointid;
+ 			events[i].flag = touch_buf[FTS_TOUCH_OFF_E_XH + base] >>
+ 					 6;
+-			events[i].x =
+-				((touch_buf[FTS_TOUCH_OFF_E_XH + base] & 0x0F)
+-				 << 8) +
+-				(touch_buf[FTS_TOUCH_OFF_XL + base] & 0xFF);
+-			events[i].y =
+-				((touch_buf[FTS_TOUCH_OFF_ID_YH + base] & 0x0F)
+-				 << 8) +
+-				(touch_buf[FTS_TOUCH_OFF_YL + base] & 0xFF);
+-			events[i].p = touch_buf[FTS_TOUCH_OFF_PRE + base];
+-			events[i].area = touch_buf[FTS_TOUCH_OFF_AREA + base];
++			fts_decode_point(ts_data, &touch_buf[base], &events[i]);
+ 			if (events[i].p <= 0)
+ 				events[i].p = 0x3F;
+ 			if (events[i].area <= 0)
+@@ -659,16 +673,7 @@ static int fts_irq_read_report(struct fts_ts_data *ts_data)
+ 			events[i].id = pointid;
+ 			events[i].flag = touch_buf[FTS_TOUCH_OFF_E_XH + base] >>
+ 					 6;
+-			events[i].x =
+-				((touch_buf[FTS_TOUCH_OFF_E_XH + base] & 0x0F)
+-				 << 8) +
+-				(touch_buf[FTS_TOUCH_OFF_XL + base] & 0xFF);
+-			events[i].y =
+-				((touch_buf[FTS_TOUCH_OFF_ID_YH + base] & 0x0F)
+-				 << 8) +
+-				(touch_buf[FTS_TOUCH_OFF_YL + base] & 0xFF);
+-			events[i].p = touch_buf[FTS_TOUCH_OFF_PRE + base];
+-			events[i].area = touch_buf[FTS_TOUCH_OFF_AREA + base];
++			fts_decode_point(ts_data, &touch_buf[base], &events[i]);
+ 			if (events[i].p <= 0)
+ 				events[i].p = 0x3F;
+ 			if (events[i].area <= 0)
+@@ -707,16 +712,7 @@ static int fts_irq_read_report(struct fts_ts_data *ts_data)
+ 			events[i].id = pointid;
+ 			events[i].flag = touch_buf[FTS_TOUCH_OFF_E_XH + base] >>
+ 					 6;
+-			events[i].x =
+-				((touch_buf[FTS_TOUCH_OFF_E_XH + base] & 0x0F)
+-				 << 8) +
+-				(touch_buf[FTS_TOUCH_OFF_XL + base] & 0xFF);
+-			events[i].y =
+-				((touch_buf[FTS_TOUCH_OFF_ID_YH + base] & 0x0F)
+-				 << 8) +
+-				(touch_buf[FTS_TOUCH_OFF_YL + base] & 0xFF);
+-			events[i].p = touch_buf[FTS_TOUCH_OFF_PRE + base];
+-			events[i].area = touch_buf[FTS_TOUCH_OFF_AREA + base];
++			fts_decode_point(ts_data, &touch_buf[base], &events[i]);
+ 			if (events[i].p <= 0)
+ 				events[i].p = 0x3F;
+ 			if (events[i].area <= 0)
+@@ -1009,6 +1005,10 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
+ 		pdata->irq_gpio = NULL;
+ 	}
+ 
++	if (of_property_read_u32(np, "focaltech,super-resolution-factors",
++				 &pdata->super_resolution))
++		pdata->super_resolution = 1;
++
+ 	ret = of_property_read_u32(np, "focaltech,max-touch-number", &temp_val);
+ 	if (ret < 0) {
+ 		dev_err(dev,
+diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_core.h b/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
+index baed446..2f8d02f 100644
+--- a/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
++++ b/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
+@@ -105,6 +105,7 @@ struct fts_ts_platform_data {
+ 	u32 x_min;
+ 	u32 y_min;
+ 	u32 max_touch_number;
++	u32 super_resolution;
+ };
+ 
+ struct ts_event {
 diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c b/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c
 index 643b8e2..019a1aa 100644
 --- a/drivers/input/touchscreen/focaltech_touch/focaltech_flash.c

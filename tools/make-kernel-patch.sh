@@ -8,14 +8,16 @@ R=$(cd "$(dirname "$0")/.." && pwd)
 ML=${ML:-$HOME/.cache/redwood-ml}
 P=$R/kernel/0001-arm64-dts-qcom-add-xiaomi-redwood.patch
 Q=arch/arm64/boot/dts/qcom
-F=drivers/input/touchscreen/focaltech_touch/focaltech_flash.c
+FT=drivers/input/touchscreen/focaltech_touch
+F="$FT/focaltech_flash.c $FT/focaltech_core.c $FT/focaltech_core.h"
 PN=drivers/gpu/drm/panel
 cd "$ML"
 git checkout -q -- $Q/Makefile $F $PN/Kconfig $PN/Makefile
 cp "$R"/dts/sm7325-xiaomi-redwood.dts "$R"/dts/sm7325-xiaomi-redwood-ft.dts $Q/
 cp "$R"/kernel/panel-xiaomi-m20-42-0d-0b.c $PN/
 sed -i 's|^dtb-$(CONFIG_ARCH_QCOM)\t+= sm7325-xiaomi-taoyao.dtb|&\ndtb-$(CONFIG_ARCH_QCOM)\t+= sm7325-xiaomi-redwood.dtb\ndtb-$(CONFIG_ARCH_QCOM)\t+= sm7325-xiaomi-redwood-ft.dtb|' $Q/Makefile
-python3 "$R/tools/fts-firmware-name.py" drivers/input/touchscreen/focaltech_touch
+python3 "$R/tools/fts-firmware-name.py" $FT
+python3 "$R/tools/fts-super-resolution.py" $FT
 python3 - $PN/Kconfig $PN/Makefile <<'PY'
 import sys
 k, m = sys.argv[1], sys.argv[2]

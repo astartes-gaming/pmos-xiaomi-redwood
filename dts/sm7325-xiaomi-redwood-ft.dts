@@ -19,7 +19,9 @@
 	/* the vendor driver drives reset as a raw level, same as nothing-spacewar */
 	reset-gpios = <&tlmm 105 GPIO_ACTIVE_HIGH>;
 	focaltech,irq-gpio = <&tlmm 81 GPIO_ACTIVE_LOW>;
-	focaltech,display-coords = <0 0 1080 2400>;
+	/* Xiaomi "super resolution" reports: 10x coordinates (vendor DT) */
+	focaltech,super-resolution-factors = <10>;
+	focaltech,display-coords = <0 0 10800 24000>;
 	focaltech,max-touch-number = <10>;
 	/* FT3680 is flashless: Xiaomi firmware is loaded into its RAM at every boot */
 	firmware-name = "focaltech_ts_fw_m20.bin";
