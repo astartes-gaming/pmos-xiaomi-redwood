@@ -963,10 +963,10 @@ index 215f267..7ffda4b 100644
  obj-$(CONFIG_DRM_PANEL_XINPENG_XPP055C272) += panel-xinpeng-xpp055c272.o
 diff --git a/drivers/gpu/drm/panel/panel-xiaomi-m20-42-0d-0b.c b/drivers/gpu/drm/panel/panel-xiaomi-m20-42-0d-0b.c
 new file mode 100644
-index 0000000..ac80817
+index 0000000..32213e2
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-xiaomi-m20-42-0d-0b.c
-@@ -0,0 +1,372 @@
+@@ -0,0 +1,377 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * DRM driver for the Xiaomi "M20 42 0d 0b" DSC video mode AMOLED panel
@@ -1281,7 +1281,12 @@ index 0000000..ac80817
 +	mipi_dsi_set_drvdata(dsi, ctx);
 +
 +	dsi->lanes = 4;
-+	dsi->format = MIPI_DSI_FMT_RGB888;
++	/*
++	 * 10 bpc DSC in video mode with widebus: DPU sends 30 bits per pclk, so
++	 * the link (byte clock) must be sized for 30 bpp (vendor: bpp = <30>).
++	 * RGB888 here under-clocks the link and floods DSI FIFO errors.
++	 */
++	dsi->format = MIPI_DSI_FMT_RGB101010;
 +	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
 +			  MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_LPM;
 +

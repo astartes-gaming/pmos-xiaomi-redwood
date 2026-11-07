@@ -312,7 +312,12 @@ static int m20_42_0d_0b_probe(struct mipi_dsi_device *dsi)
 	mipi_dsi_set_drvdata(dsi, ctx);
 
 	dsi->lanes = 4;
-	dsi->format = MIPI_DSI_FMT_RGB888;
+	/*
+	 * 10 bpc DSC in video mode with widebus: DPU sends 30 bits per pclk, so
+	 * the link (byte clock) must be sized for 30 bpp (vendor: bpp = <30>).
+	 * RGB888 here under-clocks the link and floods DSI FIFO errors.
+	 */
+	dsi->format = MIPI_DSI_FMT_RGB101010;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS | MIPI_DSI_MODE_LPM;
 
