@@ -56,10 +56,10 @@ index 0000000..b377464
 +};
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 new file mode 100644
-index 0000000..60fde31
+index 0000000..85d81de
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
-@@ -0,0 +1,870 @@
+@@ -0,0 +1,878 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
@@ -69,9 +69,9 @@ index 0000000..60fde31
 + * adjusted with values from the redwood downstream DT
 + * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
 + *
-+ * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b),
++ * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU,
 + * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
-+ * charger PMIC, pmic-glink, audio, remoteprocs, Wi-Fi/BT, GPU.
++ * charger PMIC, pmic-glink, audio, remoteprocs, Wi-Fi/BT.
 + */
 +
 +/dts-v1/;
@@ -731,6 +731,14 @@ index 0000000..60fde31
 +
 +&gpi_dma1 {
 +	status = "okay";
++};
++
++&gpu {
++	status = "okay";
++};
++
++&gpu_zap_shader {
++	firmware-name = "qcom/sm7325/xiaomi/redwood/a660_zap.mbn";
 +};
 +
 +&mdss {

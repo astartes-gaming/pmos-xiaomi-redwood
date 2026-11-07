@@ -1,21 +1,32 @@
-# Maintainer: TODO <you@example.com>
+# Maintainer: diegosace2000 <diegosace2000@users.noreply.github.com>
+#
+# Proprietary firmware for the Xiaomi POCO X5 Pro 5G (redwood), taken from the
+# stock/Evolution X vendor partition (/vendor/firmware). The blobs are NOT in
+# this repository: place them next to this APKBUILD before building, e.g. with
+#   tools/collect-firmware.sh <vendor.img>
 pkgname=firmware-xiaomi-redwood
 pkgver=1
 pkgrel=0
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
-# TODO: create a repo with the blobs extracted from stock firmware
-# (modem, adsp, cdsp, wpss, venus, ipa, a660_zap) and point _commit at it.
-url="https://github.com/TODO/firmware-xiaomi-redwood"
+url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
 license="proprietary"
 options="!check !strip !archcheck !tracedeps pmb:cross-native"
-_commit="TODO"
-source="$pkgname-$_commit.tar.gz::$url/archive/$_commit/$pkgname-$_commit.tar.gz"
-builddir="$srcdir/$pkgname-$_commit"
+source="
+	focaltech_ts_fw_m20.bin
+	a660_zap.mbn
+"
 
 package() {
-	mkdir -p "$pkgdir"
-	find . -type f -exec install -Dm644 {} "$pkgdir"/{} \;
+	# FocalTech FT3680 touch: flashless, loaded into the chip's RAM at boot
+	install -Dm644 "$srcdir"/focaltech_ts_fw_m20.bin \
+		"$pkgdir"/lib/firmware/focaltech_ts_fw_m20.bin
+	# Adreno 642L zap shader (signed for this device)
+	install -Dm644 "$srcdir"/a660_zap.mbn \
+		"$pkgdir"/lib/firmware/qcom/sm7325/xiaomi/redwood/a660_zap.mbn
 }
 
-sha512sums=""
+sha512sums="
+e7cb462ded705ac7afb5be76002acc3df66d119b706749bc129bdc8ad97efaa1fd9992a0fe7fe185040ca99e9e26aae9ef62147a2490270aaa74604428502099  focaltech_ts_fw_m20.bin
+9b5ea6aa19666a02d4210cd185512a7a7d01b9421a60ca1184cd69920786b06e80b5803774199a385ad59a05f8e1060f1d35755a03c91aaa8a3218081d21a651  a660_zap.mbn
+"

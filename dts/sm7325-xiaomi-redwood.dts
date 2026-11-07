@@ -7,9 +7,9 @@
  * adjusted with values from the redwood downstream DT
  * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
  *
- * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b),
+ * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU,
  * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
- * charger PMIC, pmic-glink, audio, remoteprocs, Wi-Fi/BT, GPU.
+ * charger PMIC, pmic-glink, audio, remoteprocs, Wi-Fi/BT.
  */
 
 /dts-v1/;
@@ -669,6 +669,14 @@
 
 &gpi_dma1 {
 	status = "okay";
+};
+
+&gpu {
+	status = "okay";
+};
+
+&gpu_zap_shader {
+	firmware-name = "qcom/sm7325/xiaomi/redwood/a660_zap.mbn";
 };
 
 &mdss {

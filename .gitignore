@@ -1,3 +1,5 @@
 *.apk
 *.img
 *.tar.gz
+firmware-xiaomi-redwood/*.bin
+firmware-xiaomi-redwood/*.mbn

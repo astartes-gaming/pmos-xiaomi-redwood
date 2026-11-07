@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=1
+pkgrel=2
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -11,6 +11,7 @@ options="!check !archcheck"
 depends="
 	alsa-ucm-conf-qcom-sc7280
 	firmware-qcom-adreno-a660
+	firmware-xiaomi-redwood
 	linux-firmware-ath11k
 	linux-firmware-qca
 	linux-postmarketos-qcom-sc7280
