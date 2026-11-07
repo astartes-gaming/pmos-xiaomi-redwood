@@ -11,11 +11,13 @@
  */
 
 #include <linux/backlight.h>
+#include <linux/debugfs.h>
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
 #include <linux/mod_devicetable.h>
 #include <linux/module.h>
 #include <linux/regulator/consumer.h>
+#include <linux/uaccess.h>
 
 #include <video/mipi_display.h>
 
@@ -32,6 +34,8 @@ struct m20_42_0d_0b {
 	struct drm_dsc_config dsc;
 	struct regulator_bulk_data *supplies;
 	struct gpio_desc *reset_gpio;
+	struct dentry *debugfs;
+	char dbg_out[512];
 };
 
 static const struct regulator_bulk_data m20_42_0d_0b_supplies[] = {
@@ -55,6 +59,104 @@ static void m20_42_0d_0b_reset(struct m20_42_0d_0b *ctx)
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
 	msleep(20);
 }
+
+/*
+ * Bring-up debug interface: /sys/kernel/debug/panel-m20/dcs
+ *   echo "w 11"            > dcs   DCS write (command + params, hex)
+ *   echo "r 0a 1"          > dcs   DCS read: command, length
+ *   echo "g 29"            > dcs   generic write (hex bytes)
+ *   echo "reset"           > dcs   pulse reset with the vendor sequence
+ *   echo "lp" / "hs"       > dcs   send following commands in LP / HS
+ *   cat dcs                        result of the last command
+ */
+static ssize_t m20_dbg_write(struct file *file, const char __user *ubuf,
+			     size_t len, loff_t *ppos)
+{
+	struct m20_42_0d_0b *ctx = file->private_data;
+	struct mipi_dsi_device *dsi = ctx->dsi;
+	char buf[256], *p = buf, *tok;
+	u8 data[64];
+	int n = 0, ret = 0;
+	char op;
+
+	if (len >= sizeof(buf))
+		return -EINVAL;
+	if (copy_from_user(buf, ubuf, len))
+		return -EFAULT;
+	buf[len] = 0;
+	strim(buf);
+
+	if (!strcmp(buf, "reset")) {
+		m20_42_0d_0b_reset(ctx);
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "reset done\n");
+		return len;
+	}
+	if (!strcmp(buf, "lp") || !strcmp(buf, "hs")) {
+		if (buf[0] == 'l')
+			dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+		else
+			dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "mode %s\n", buf);
+		return len;
+	}
+
+	tok = strsep(&p, " ");
+	if (!tok || strlen(tok) != 1)
+		return -EINVAL;
+	op = tok[0];
+	while ((tok = strsep(&p, " ")) && n < ARRAY_SIZE(data)) {
+		if (!*tok)
+			continue;
+		if (kstrtou8(tok, 16, &data[n++]))
+			return -EINVAL;
+	}
+	if (!n)
+		return -EINVAL;
+
+	switch (op) {
+	case 'w':
+		ret = mipi_dsi_dcs_write(dsi, data[0], data + 1, n - 1);
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "dcs write %02x (%d params): %d\n",
+			  data[0], n - 1, ret);
+		break;
+	case 'g':
+		ret = mipi_dsi_generic_write(dsi, data, n);
+		scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "generic write (%d bytes): %d\n", n, ret);
+		break;
+	case 'r': {
+		u8 rx[32] = { 0 };
+		int rlen = n > 1 ? min_t(int, data[1], sizeof(rx)) : 1;
+		int i, o;
+
+		ret = mipi_dsi_dcs_read(dsi, data[0], rx, rlen);
+		o = scnprintf(ctx->dbg_out, sizeof(ctx->dbg_out), "dcs read %02x: %d:", data[0], ret);
+		for (i = 0; i < rlen; i++)
+			o += scnprintf(ctx->dbg_out + o, sizeof(ctx->dbg_out) - o, " %02x", rx[i]);
+		scnprintf(ctx->dbg_out + o, sizeof(ctx->dbg_out) - o, "\n");
+		break;
+	}
+	default:
+		return -EINVAL;
+	}
+
+	return ret < 0 ? ret : len;
+}
+
+static ssize_t m20_dbg_read(struct file *file, char __user *ubuf,
+			    size_t len, loff_t *ppos)
+{
+	struct m20_42_0d_0b *ctx = file->private_data;
+
+	return simple_read_from_buffer(ubuf, len, ppos, ctx->dbg_out,
+				       strlen(ctx->dbg_out));
+}
+
+static const struct file_operations m20_dbg_fops = {
+	.open = simple_open,
+	.write = m20_dbg_write,
+	.read = m20_dbg_read,
+	.llseek = default_llseek,
+};
 
 static int m20_42_0d_0b_on(struct m20_42_0d_0b *ctx)
 {
@@ -384,6 +486,9 @@ static int m20_42_0d_0b_probe(struct mipi_dsi_device *dsi)
 		return dev_err_probe(dev, ret, "Failed to attach to DSI host\n");
 	}
 
+	ctx->debugfs = debugfs_create_dir("panel-m20", NULL);
+	debugfs_create_file("dcs", 0600, ctx->debugfs, ctx, &m20_dbg_fops);
+
 	return 0;
 }
 
@@ -391,6 +496,7 @@ static void m20_42_0d_0b_remove(struct mipi_dsi_device *dsi)
 {
 	struct m20_42_0d_0b *ctx = mipi_dsi_get_drvdata(dsi);
 
+	debugfs_remove_recursive(ctx->debugfs);
 	drm_panel_remove(&ctx->panel);
 }
 

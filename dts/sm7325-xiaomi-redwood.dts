@@ -398,10 +398,10 @@
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 
-		/* redwood panel: dvdd 1.23-1.25 V */
+		/* redwood panel: dvdd 1.25 V for the 42 0d 0b panel (dsi_panel_pwr_supply_m20_0b) */
 		vreg_l16b_1p2: ldo16 {
 			regulator-name = "vreg_l16b_1p2";
-			regulator-min-microvolt = <1232000>;
+			regulator-min-microvolt = <1248000>;
 			regulator-max-microvolt = <1256000>;
 			regulator-always-on;
 			regulator-boot-on;
