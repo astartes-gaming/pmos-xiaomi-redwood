@@ -185,20 +185,25 @@ static int m20_42_0d_0b_prepare(struct drm_panel *panel)
 
 	m20_42_0d_0b_reset(ctx);
 
-	ret = m20_42_0d_0b_on(ctx);
-	if (ret < 0) {
-		dev_err(&ctx->dsi->dev, "Failed to initialize panel: %d\n", ret);
-		goto err;
-	}
-
+	/*
+	 * Like the vendor driver (dsi_panel_update_pps before the on-commands),
+	 * configure DSC before the init sequence: with the PPS sent afterwards
+	 * the panel ignores sleep-out and reports power mode 0x0c.
+	 */
+	ctx->dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	drm_dsc_pps_payload_pack(&pps, &ctx->dsc);
 	mipi_dsi_picture_parameter_set_multi(&dsi_ctx, &pps);
 	mipi_dsi_compression_mode_ext_multi(&dsi_ctx, true,
 					    MIPI_DSI_COMPRESSION_DSC, 0);
-	mipi_dsi_msleep(&dsi_ctx, 28);
 	if (dsi_ctx.accum_err < 0) {
 		ret = dsi_ctx.accum_err;
 		dev_err(&ctx->dsi->dev, "Failed to enable DSC: %d\n", ret);
+		goto err;
+	}
+
+	ret = m20_42_0d_0b_on(ctx);
+	if (ret < 0) {
+		dev_err(&ctx->dsi->dev, "Failed to initialize panel: %d\n", ret);
 		goto err;
 	}
 
