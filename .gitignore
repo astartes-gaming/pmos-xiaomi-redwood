@@ -4,3 +4,4 @@
 firmware-xiaomi-redwood/*.bin
 firmware-xiaomi-redwood/*.mbn
 firmware-xiaomi-redwood/*.elf
+firmware-xiaomi-redwood/regdb.bin
