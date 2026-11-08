@@ -8,8 +8,9 @@
  * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
  *
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
+ * speakers (ADSP + AW88261),
  * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
- * charger PMIC, pmic-glink, audio, ADSP/CDSP/modem, Bluetooth.
+ * charger PMIC, pmic-glink, microphones/headset, CDSP/modem, Bluetooth.
  */
 
 /dts-v1/;
@@ -19,6 +20,8 @@
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
 #include <dt-bindings/regulator/qcom,rpmh-regulator.h>
+#include <dt-bindings/sound/qcom,q6afe.h>
+#include <dt-bindings/sound/qcom,q6asm.h>
 
 #include "sm7325.dtsi"
 #include "pm7325.dtsi"
@@ -679,6 +682,44 @@
 	firmware-name = "qcom/sm7325/xiaomi/redwood/a660_zap.mbn";
 };
 
+&i2c3 {
+	clock-frequency = <100000>;
+
+	status = "okay";
+
+	/* Awinic AW88261 smart amps (vendor: aw882xx_smartpa) */
+	aw88261_bot: audio-codec@34 {	/* bottom speaker */
+		compatible = "awinic,aw88261";
+		reg = <0x34>;
+
+		dvdd-supply = <&vreg_l18b_1p8>;
+		sound-name-prefix = "Speaker Bottom";
+		firmware-name = "qcom/sm7325/xiaomi/redwood/aw88261_acf.bin";
+
+		awinic,audio-channel = <1>;
+
+		#sound-dai-cells = <0>;
+	};
+
+	aw88261_top: audio-codec@35 {	/* top speaker / earpiece */
+		compatible = "awinic,aw88261";
+		reg = <0x35>;
+
+		dvdd-supply = <&vreg_l18b_1p8>;
+		sound-name-prefix = "Speaker Top";
+		firmware-name = "qcom/sm7325/xiaomi/redwood/aw88261_acf.bin";
+
+		awinic,audio-channel = <0>;
+
+		#sound-dai-cells = <0>;
+	};
+};
+
+&lpass_audiocc {
+	compatible = "qcom,qcm6490-lpassaudiocc";
+	/delete-property/ power-domains;
+};
+
 &mdss {
 	status = "okay";
 };
@@ -763,10 +804,60 @@
 	status = "okay";
 };
 
+&q6afedai {
+	dai@16 {
+		reg = <PRIMARY_MI2S_RX>;
+		qcom,sd-lines = <1>;
+	};
+};
+
+&remoteproc_adsp {
+	firmware-name = "qcom/sm7325/xiaomi/redwood/adsp.mbn";
+
+	status = "okay";
+};
+
 &remoteproc_wpss {
 	firmware-name = "qcom/sm7325/xiaomi/redwood/wpss.mbn";
 
 	status = "okay";
+};
+
+&sound {
+	compatible = "xiaomi,redwood-sndcard",
+		     "motorola,dubai-sndcard";
+
+	model = "redwood";
+
+	pinctrl-0 = <&pri_mi2s_bck_active &pri_mi2s_din_active
+		     &pri_mi2s_dout_active &pri_mi2s_ws_active>;
+	pinctrl-1 = <&pri_mi2s_sleep>;
+	pinctrl-names = "default",
+			"sleep";
+
+	mm1-dai-link {
+		link-name = "MultiMedia1";
+
+		cpu {
+			sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA1>;
+		};
+	};
+
+	i2s-dai-link {
+		link-name = "I2S Playback";
+
+		codec {
+			sound-dai = <&aw88261_top>, <&aw88261_bot>;
+		};
+
+		cpu {
+			sound-dai = <&q6afedai PRIMARY_MI2S_RX>;
+		};
+
+		platform {
+			sound-dai = <&q6routing>;
+		};
+	};
 };
 
 &spi13 {
@@ -818,6 +909,45 @@
 	sde_te_active_sleep: sde-te-active-state {
 		pins = "gpio80";
 		function = "mdp_vsync";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	pri_mi2s_bck_active: pri-mi2s-bck-active-state {
+		pins = "gpio97";
+		function = "mi2s0_sck";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	pri_mi2s_din_active: pri-mi2s-din-active-state {
+		pins = "gpio98";
+		function = "mi2s0_data0";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	pri_mi2s_dout_active: pri-mi2s-dout-active-state {
+		pins = "gpio99";
+		function = "mi2s0_data1";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	pri_mi2s_ws_active: pri-mi2s-ws-active-state {
+		pins = "gpio100";
+		function = "mi2s0_ws";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	pri_mi2s_sleep: pri-mi2s-sleep-state {
+		pins = "gpio97", "gpio98", "gpio99", "gpio100";
+		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-down;
 	};

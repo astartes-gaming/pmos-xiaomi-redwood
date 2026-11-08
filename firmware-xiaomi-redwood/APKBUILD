@@ -6,7 +6,7 @@
 # to this APKBUILD before building (tools/collect-firmware.sh).
 pkgname=firmware-xiaomi-redwood
 pkgver=1
-pkgrel=2
+pkgrel=3
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
@@ -18,6 +18,11 @@ source="
 	wpss.mbn
 	board-2.bin
 	regdb.bin
+	adsp.mbn
+	adspr.jsn
+	adsps.jsn
+	adspua.jsn
+	aw88261_acf.bin
 "
 
 package() {
@@ -36,7 +41,17 @@ package() {
 	local d="$pkgdir"/lib/firmware/postmarketos/ath11k/WCN6750/hw1.0
 	install -Dm644 "$srcdir"/board-2.bin "$d"/board-2.bin
 	install -Dm644 "$srcdir"/regdb.bin "$d"/regdb.bin
+
+	# Audio DSP (ADSP) firmware + protection-domain service files, and the
+	# Awinic AW88261 speaker amp configuration (vendor aw882xx_acf.bin)
+	local q="$pkgdir"/lib/firmware/qcom/sm7325/xiaomi/redwood
+	install -Dm644 "$srcdir"/adsp.mbn "$q"/adsp.mbn
+	install -Dm644 "$srcdir"/adspr.jsn "$q"/adspr.jsn
+	install -Dm644 "$srcdir"/adsps.jsn "$q"/adsps.jsn
+	install -Dm644 "$srcdir"/adspua.jsn "$q"/adspua.jsn
+	install -Dm644 "$srcdir"/aw88261_acf.bin "$q"/aw88261_acf.bin
 }
+
 
 
 
@@ -46,4 +61,9 @@ e7cb462ded705ac7afb5be76002acc3df66d119b706749bc129bdc8ad97efaa1fd9992a0fe7fe185
 4df80c2adcf17bcd68b5d43120ef26d967b07b0dcf0f2a30efb85970aab322ba79f1cd8cc8a4674abd4ec636dc81a4ec584f341cf6932eb8c003552a953830c3  wpss.mbn
 f358a4522dfd6cf9df7281c23a8ef526d0b9fe58025dac1d8047b724773ad7963be978b13e4813633065aa14a1bca91055e28c12ab04f1078c990c1a33492b7b  board-2.bin
 9987aece41814415add9063a8b185d2f6441e9cc7d13d68fdab335d73393290f0ed29ed059a3df10e00e25e85dfc457d7f1e57d3572cbed123443d214506141e  regdb.bin
+c818faf2afc566c5483e949cd271bebe9d754d1755c636df0bac3ab6ecbea3820afe31363e2d404993ca5c869e8e560eeea5f1f0eda292a9d7c7890841e17e7b  adsp.mbn
+a026d6a9188f7cc0e1bc0b572206b5651aefbfdfd86eeed1b14151031814f9714191140dd9c9fb4ebad4da6d76bee14c0f27e2f164dba6749e8a7818d6d9578a  adspr.jsn
+00bdba8e7e4d7ee30806fc245f5101c7b66ec4b92833d9be99326f977d8fd4f9712b16184ea330359820768dc54758744d857d8dd7209e7f0a2231ab196435f2  adsps.jsn
+0d4ed22c7eb1866f43032e5cf6ac2f196f02c3dc8220c49124d8e2c52bea559f63fa505e7fa60aba2c04ab6b1f08528306d60a31bd5426e16df3eb3e86f9a483  adspua.jsn
+5bd2c8a945893d52cc2df1922ec5cebc9a2f95f5d4a88e81959894edf0129e9e5a719f0983fe75912e188d436c5bfe77fa07341f253fa8af12e5734fb1512c71  aw88261_acf.bin
 "
