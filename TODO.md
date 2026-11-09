@@ -27,7 +27,9 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   - ✅ SIM (Entel): registered home, LTE + 5G NR (NSA; NR leg attaches during
     traffic), mobile data via NM gsm connection (APN imovil.entelpcs.cl):
     ping OK, 6.9 Mbit/s on weak signal (RSRP -120 dBm)
-  - ⬜ SMS receive / send
+  - ✅ SMS send and receive in Chats (incoming can take a few minutes on
+    this weak signal). Spacebar/Plasma Dialer removed: their daemons grabbed
+    incoming SMS in the Phosh session
 - 🔧 **Cell broadcast**: cellbroadcastd runs; device r8 enables the test and
   AMBER levels on top of the defaults (country channel mode), so SAE test
   alerts show. ModemManager only takes channel lists on an enabled modem.
