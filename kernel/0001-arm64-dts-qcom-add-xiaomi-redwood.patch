@@ -58,7 +58,7 @@ index 0000000..1cdb8c5
 +};
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 new file mode 100644
-index 0000000..572f186
+index 0000000..5fe259b
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 @@ -0,0 +1,1124 @@
@@ -74,7 +74,7 @@ index 0000000..572f186
 + * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
 + * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x), Bluetooth (WCN6750 on uart7),
 + * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
-+ * USB-C role switching, microphones/headset, CDSP/modem,.
++ * USB-C role switching, microphones/headset, CDSP/modem.
 + */
 +
 +/dts-v1/;

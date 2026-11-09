@@ -10,7 +10,7 @@
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
  * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x), Bluetooth (WCN6750 on uart7),
  * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
- * USB-C role switching, microphones/headset, CDSP/modem,.
+ * USB-C role switching, microphones/headset, CDSP/modem.
  */
 
 /dts-v1/;
