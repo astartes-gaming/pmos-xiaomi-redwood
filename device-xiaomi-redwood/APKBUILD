@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=15
+pkgrel=16
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -11,7 +11,6 @@ options="!check !archcheck"
 depends="
 	alsa-ucm-conf-qcom-sc7280
 	firmware-qcom-adreno-a660
-	firmware-xiaomi-redwood
 	linux-firmware-ath11k
 	linux-firmware-qca
 	linux-postmarketos-qcom-sc7280
@@ -24,8 +23,12 @@ depends="
 	hexagonrpcd
 	iio-sensor-proxy
 	libssc
+	e2fsprogs-extra
+	python3
+	device-mapper
 "
 makedepends="devicepkg-dev"
+subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
 source="
 	deviceinfo
 	modules-initfs
@@ -38,6 +41,10 @@ source="
 	redwood-usb-replug.service
 	71-redwood-usb-replug.rules
 	72-redwood-bt-nowake.rules
+	redwood-firmware-setup.sh
+	redwood-firmware-setup.service
+	squash_mdt.py
+	ath11k_board2.py
 	81-libssc-xiaomi-redwood.rules
 	90_redwood-cbd.gschema.override
 	70-redwood-lirc.rules
@@ -73,6 +80,18 @@ package() {
 	install -Dm644 "$srcdir"/71-redwood-usb-replug.rules \
 		-t "$pkgdir"/usr/lib/udev/rules.d
 
+	# Public builds: install firmware from the phone's own partitions on
+	# first boot (no-op when firmware-xiaomi-redwood is installed)
+	install -Dm755 "$srcdir"/redwood-firmware-setup.sh \
+		"$pkgdir"/usr/libexec/redwood-firmware-setup
+	install -Dm644 -t "$pkgdir"/usr/libexec/redwood-fw \
+		"$srcdir"/squash_mdt.py "$srcdir"/ath11k_board2.py
+	install -Dm644 -t "$pkgdir"/usr/lib/systemd/system \
+		"$srcdir"/redwood-firmware-setup.service
+	mkdir -p "$pkgdir"/usr/lib/systemd/system/sysinit.target.wants
+	ln -s ../redwood-firmware-setup.service \
+		"$pkgdir"/usr/lib/systemd/system/sysinit.target.wants/redwood-firmware-setup.service
+
 	# Suspend: the Bluetooth UART wake IRQ aborts every suspend attempt
 	install -Dm644 "$srcdir"/72-redwood-bt-nowake.rules \
 		-t "$pkgdir"/usr/lib/udev/rules.d
@@ -99,6 +118,12 @@ package() {
 		-t "$pkgdir"/usr/lib/udev/rules.d
 }
 
+nonfree_firmware() {
+	pkgdesc="Firmware copied from a redwood (otherwise installed from the phone's own partitions on first boot)"
+	depends="firmware-xiaomi-redwood"
+	mkdir "$subpkgdir"
+}
+
 sha512sums="
 a20d359bd6cf77faccd712cc5ff589eb0adb1932bb6628fe2b973753d56c02ee7cb3d7af784beb3e85dabe87a85320b8a501aae1574397bafda9a78d258860c2  deviceinfo
 c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8ef5d68e67c625d551e67c790ea01b103fcf38848e8aebfdf1  modules-initfs
@@ -111,6 +136,10 @@ c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8e
 57bbf2158d0e31652e782038c865496185de2bf1f64ecbbb5b2291397ee6e30d6a525d16c296f6bf5fdec61d746da5758e930cd1a9a7aa233a85a273a09a48a9  redwood-usb-replug.service
 b15ee7547b6b5189e6fad6b4744677240daa1925d3c363eb8e33203bb751cb98a4ebee6ce6b991bfa7ab15f9a6ce64fa2cc525e18750102b1a2ecde7a41eefe9  71-redwood-usb-replug.rules
 7305c0195a335b8b33fa84b65c54a0c16be60dd4448c7d6935f3fad939f962f424883863c7f919c7826c7e1b91f482860ad7043817632444b7af27571dcbbce6  72-redwood-bt-nowake.rules
+9f4d2f4f6461372a05f5de90a8977a42c58daee939ceb131ea7dfeb9e11e5671bdbcb9467c9dd2d0108e51336ef56059dab4f5ab23e7a3325225c7835e51e8db  redwood-firmware-setup.sh
+7bfa519b8bcb0150c65e9f458e8ab0df22569d8ad3bce7c93c7adfcf0a893d158846c6e7b5978dc2325f7d7be90e4ca18f2312c7c7bab1a27a1b8246700d3a91  redwood-firmware-setup.service
+b12e6e9bdec6b750cde615a730ffdc632253a348d728d2fa1e6e8d87bb9db60487f1d9bd28d351412f07a3d463989fabda0a185c151ffe34cb30cb8c2aa90ff2  squash_mdt.py
+7c6c6b45b65c588f2c241fc638deab61ae158f35e7f4c107170bc5d2342a34889d131150e38ed41da426eae3403354a5bddf6742d8de3e995b54501f71e19d50  ath11k_board2.py
 0f060e9bd7834ce9962e3e32dcd3d5276b7381e55fe10782282e235f56661741134915c63cdbc541a3a94b63c262c70038890aae01bbc82582007d7480fea2de  81-libssc-xiaomi-redwood.rules
 0360050ba16732556269426717d9637cd69a6690be0fc756e3894acfbb7fbe7c3f3b6b6a076fcd04816d024cc2c5a99fe564cc52298d296e6350c738fcdab409  90_redwood-cbd.gschema.override
 7080344c5c40f7f8ef244c8470a7aac7d1d1ed4f81dc9d0d734b299fc33b08570bc86ff1700c8f315590893e99a2a57d1255387ce741f0d4099187f1c28b2e76  70-redwood-lirc.rules

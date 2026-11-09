@@ -111,6 +111,11 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   dtbo, flash boot + userdata, reboot-bootloader quirk); not yet run on a phone
 - ⬜ Recovery-flashable zip (`pmbootstrap install --android-recovery-zip`);
   needs deviceinfo partition settings and a working redwood recovery
-- ⬜ Public builds: fetch firmware from the user's own phone/ROM at install
-  time; never ship one phone's persist calibration
+- 🔧 Public builds: device r16 no longer depends on firmware-xiaomi-redwood
+  (moved to the -nonfree-firmware subpackage). redwood-firmware-setup runs
+  on first boot when firmware is missing: mounts modem/bluetooth/dsp/persist
+  and vendor (super) read-only, builds the same files (squash_mdt,
+  ath11k_board2 with the hwc board file), reboots once. Verified: generated
+  606 files byte-identical to the firmware package (ROOT= test run)
+  - ⬜ Fresh-install test without the firmware package (needs a wipe)
 - ⬜ GitHub Release with the installer files (ask before publishing: public)
