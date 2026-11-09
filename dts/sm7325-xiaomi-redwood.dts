@@ -10,8 +10,8 @@
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
  * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x), Bluetooth (WCN6750 on uart7),
  * microphones (WCD938x: AMIC1 main, AMIC5 secondary), UFS, USB networking,
- * buttons, touchscreen. Not yet enabled: PM7325B
- * USB-C role switching, headset detection, CDSP/modem.
+ * modem (MPSS + IPA), buttons, touchscreen. Not yet enabled: PM7325B
+ * USB-C role switching, headset detection, CDSP.
  */
 
 /dts-v1/;
@@ -781,6 +781,14 @@
 	};
 };
 
+&ipa {
+	qcom,gsi-loader = "self";
+	memory-region = <&ipa_fw_mem>;
+	firmware-name = "qcom/sm7325/xiaomi/redwood/ipa_fws.mbn";
+
+	status = "okay";
+};
+
 &lpass_audiocc {
 	compatible = "qcom,qcm6490-lpassaudiocc";
 	/delete-property/ power-domains;
@@ -927,6 +935,12 @@
 
 &remoteproc_adsp {
 	firmware-name = "qcom/sm7325/xiaomi/redwood/adsp.mbn";
+
+	status = "okay";
+};
+
+&remoteproc_mpss {
+	firmware-name = "qcom/sm7325/xiaomi/redwood/modem.mbn";
 
 	status = "okay";
 };

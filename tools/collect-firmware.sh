@@ -24,6 +24,13 @@ python3 "$here/tools/squash_mdt.py" "$modem/adsp.mdt" "$out/adsp.mbn"
 cp "$modem/adspr.jsn" "$modem/adsps.jsn" "$modem/adspua.jsn" "$modem/battmgr.jsn" "$out/"
 cp "$tmp/aw882xx_acf.bin" "$out/aw88261_acf.bin"
 cp "$modem/msbtfw11.mbn" "$modem/msnv11.bin" "$out/"
+python3 "$here/tools/squash_mdt.py" "$modem/modem.mdt" "$out/modem.mbn"
+cp "$modem/modemr.jsn" "$out/"
+tar -C "$modem" --owner=0 --group=0 --sort=name --mtime=@0 -czf "$out/modem_pr.tar.gz" modem_pr
+for f in yupik_ipa_fws.mdt yupik_ipa_fws.b00 yupik_ipa_fws.b01 yupik_ipa_fws.b02 yupik_ipa_fws.b03 yupik_ipa_fws.b04; do
+	debugfs -R "dump /firmware/$f $tmp/$f" "$img" >/dev/null 2>&1
+done
+python3 "$here/tools/squash_mdt.py" "$tmp/yupik_ipa_fws.mdt" "$out/ipa_fws.mbn"
 rm -rf "$tmp"
 echo "firmware copied to $out"
 echo "sensors: run tools/collect-sensors.sh vendor.img persist.img dsp.img"

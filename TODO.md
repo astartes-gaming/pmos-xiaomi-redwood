@@ -12,14 +12,16 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 - ✅ Vibration (AW86927)
 - ✅ Sensors: accelerometer / auto-rotate, light, proximity, magnetometer
 - ✅ USB networking (with a reset-timer workaround, see below)
+- ✅ Modem hardware (see Next for SIM tests)
 - ✅ Phosh (default), Plasma Mobile; clock clear of the camera cutout in Phosh
 
 ## Next
 
-- 🔧 **Modem**: firmware, MPSS remoteproc, rmtfs, IPA, ModemManager.
-  Without a SIM: boot, IMEI, firmware version, network scan, signal.
-  Identity partitions (modemst1/2, fsg, persist) are backed up.
-  - ⬜ Needs you: insert a SIM for registration, data, SMS
+- ✅ **Modem** (no SIM): MPSS boots redwood's firmware, rmtfs/tqftpserv serve
+  EFS and the modem_pr carrier configs, IPA up, ModemManager detects it
+  (IMEI, firmware MPSS.HI.4.3.c2, carrier config Entel_CL). Radio online:
+  network scan sees Claro, Movistar, WOM, Entel; camps on WCDMA for emergency.
+  - ⬜ Needs you: insert a SIM for registration, LTE/5G, data, SMS
 - ⬜ **Cell broadcast**: cellbroadcastd listening on emergency (SAE) channels;
   log all channels for a few days to see what Chilean carriers send
 - ⬜ **Voice calls**: earpiece + mic routing for calls
@@ -57,3 +59,4 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   needs deviceinfo partition settings and a working redwood recovery
 - ⬜ Public builds: fetch firmware from the user's own phone/ROM at install
   time; never ship one phone's persist calibration
+- ⬜ GitHub Release with the installer files (ask before publishing: public)

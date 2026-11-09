@@ -6,7 +6,7 @@
 # to this APKBUILD before building (tools/collect-firmware.sh).
 pkgname=firmware-xiaomi-redwood
 pkgver=1
-pkgrel=6
+pkgrel=7
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
@@ -27,6 +27,10 @@ source="
 	hexagonfs.tar.gz
 	msbtfw11.mbn
 	msnv11.bin
+	modem.mbn
+	modemr.jsn
+	ipa_fws.mbn
+	modem_pr.tar.gz
 "
 
 package() {
@@ -55,6 +59,17 @@ package() {
 	install -Dm644 "$srcdir"/adspua.jsn "$q"/adspua.jsn
 	install -Dm644 "$srcdir"/battmgr.jsn "$q"/battmgr.jsn
 	install -Dm644 "$srcdir"/aw88261_acf.bin "$q"/aw88261_acf.bin
+
+	# Modem (MPSS) firmware + service file, from the phone's modem partition;
+	# modem_pr/ holds the MCFG carrier configs the modem fetches over
+	# tqftpserv (without them it stays "offline"). IPA (mobile data) GSI
+	# firmware from vendor /firmware/yupik_ipa_fws.
+	install -Dm644 "$srcdir"/modem.mbn "$q"/modem.mbn
+	install -Dm644 "$srcdir"/modemr.jsn "$q"/modemr.jsn
+	install -Dm644 "$srcdir"/ipa_fws.mbn "$q"/ipa_fws.mbn
+	cp -r "$srcdir"/modem_pr "$q"/
+	find "$q"/modem_pr -type d -exec chmod 0755 {} +
+	find "$q"/modem_pr -type f -exec chmod 0644 {} +
 
 	# WCN6750 Bluetooth patch + redwood NVM (modem partition), ahead of the
 	# generic linux-firmware copies via the postmarketos/ search path
@@ -91,4 +106,8 @@ a026d6a9188f7cc0e1bc0b572206b5651aefbfdfd86eeed1b14151031814f9714191140dd9c9fb4e
 abdb390e717eeed4652d366eb5b802d68ddcbcd136897de57e9f98708c3fd702a10808ab468de5fcd506ede3063a6f0698456345d843db8e442c7d2664c25458  hexagonfs.tar.gz
 274ce8915cd65cf313e83d94a5feb7f55596c7e8dcd4e3d1fc8d23465e5a57f8a5d474e7f3192206c9f605d6acd394bb75dde14532da98c6f33ebe85fb08b9fa  msbtfw11.mbn
 8678a102834d8729ef63acc9e238b01a48bea35c2d102d85129f928ae7d00d875dbaa8a7fad07510da1a5c7adcb5389af76a140af05fe8b5e03e286e201a04c5  msnv11.bin
+99951bce909156395211a0ceb24dec955a35b780189e993ddeb9b9aa1331eb6fb9fdc0dcb4eabaa6b4a6fdf893430f969dd409fefe5386d96a5ddd277ddef13d  modem.mbn
+841e6538588b47e5497eb145e4e41e6698da55cabdd022390d5c4415fea8bce3f978fdef7fe3cace06b07f6ebcf91847f48a2e9c191d624853710dcb09160839  modemr.jsn
+b0133574252388effec8a32e95ceb0b96f9aabe0c73dd356092be6267736be80986fdd6eb132f50d250de600ae9d2858255c5cf4605c7be79b0728b1c63f450d  ipa_fws.mbn
+b2735b3b792d5d759d95242d27f96602d74830fd28e4c5294d12e3c5366128fdae37877754dac7def858586b58c2aba93744ee643f7218dac514fb717c2bb858  modem_pr.tar.gz
 "
