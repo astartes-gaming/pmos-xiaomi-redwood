@@ -1,0 +1,3 @@
+# iio-sensor-proxy with libssc: accelerometer mount matrix (redwood BMI3x0).
+# Upright portrait reads +Y; iio-sensor-proxy expects -Y: rotate X/Y 180°.
+SUBSYSTEM=="misc", KERNEL=="fastrpc-*", ENV{ACCEL_MOUNT_MATRIX}+="-1, 0, 0; 0, -1, 0; 0, 0, 1"

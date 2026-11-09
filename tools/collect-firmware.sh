@@ -25,3 +25,4 @@ cp "$modem/adspr.jsn" "$modem/adsps.jsn" "$modem/adspua.jsn" "$modem/battmgr.jsn
 cp "$tmp/aw882xx_acf.bin" "$out/aw88261_acf.bin"
 rm -rf "$tmp"
 echo "firmware copied to $out"
+echo "sensors: run tools/collect-sensors.sh vendor.img persist.img dsp.img"

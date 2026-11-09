@@ -6,7 +6,7 @@
 # to this APKBUILD before building (tools/collect-firmware.sh).
 pkgname=firmware-xiaomi-redwood
 pkgver=1
-pkgrel=4
+pkgrel=5
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
@@ -24,6 +24,7 @@ source="
 	adspua.jsn
 	battmgr.jsn
 	aw88261_acf.bin
+	hexagonfs.tar.gz
 "
 
 package() {
@@ -52,6 +53,16 @@ package() {
 	install -Dm644 "$srcdir"/adspua.jsn "$q"/adspua.jsn
 	install -Dm644 "$srcdir"/battmgr.jsn "$q"/battmgr.jsn
 	install -Dm644 "$srcdir"/aw88261_acf.bin "$q"/aw88261_acf.bin
+
+	# Files hexagonrpcd serves to the ADSP sensor hub (tools/collect-sensors.sh):
+	# sensor configs, sns_reg.conf, this phone's calibrated registry (persist),
+	# ADSP libraries (dsp partition) and socinfo. Path is derived by
+	# hexagonrpcd from the DT: qcom,<soc> / model vendor / <vendor>,<device>.
+	local h="$pkgdir"/usr/share/qcom/sm7325/Xiaomi/redwood
+	mkdir -p "$h"
+	cp -r "$srcdir"/hexagonfs/. "$h"/
+	find "$h" -type d -exec chmod 0755 {} +
+	find "$h" -type f -exec chmod 0644 {} +
 }
 
 
@@ -70,4 +81,5 @@ a026d6a9188f7cc0e1bc0b572206b5651aefbfdfd86eeed1b14151031814f9714191140dd9c9fb4e
 0d4ed22c7eb1866f43032e5cf6ac2f196f02c3dc8220c49124d8e2c52bea559f63fa505e7fa60aba2c04ab6b1f08528306d60a31bd5426e16df3eb3e86f9a483  adspua.jsn
 5bad891996a830b39e34ba43ad728cf69a81c5e9c5878fa57f87507a5aae61dff226ae2ff323ca82d70cee81f34ab40ac605d7568422f11b7458af56c5bc1530  battmgr.jsn
 5bd2c8a945893d52cc2df1922ec5cebc9a2f95f5d4a88e81959894edf0129e9e5a719f0983fe75912e188d436c5bfe77fa07341f253fa8af12e5734fb1512c71  aw88261_acf.bin
+abdb390e717eeed4652d366eb5b802d68ddcbcd136897de57e9f98708c3fd702a10808ab468de5fcd506ede3063a6f0698456345d843db8e442c7d2664c25458  hexagonfs.tar.gz
 "

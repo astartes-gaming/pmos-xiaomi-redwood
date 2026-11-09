@@ -8,7 +8,7 @@
  * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
  *
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
- * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927),
+ * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x),
  * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
  * USB-C role switching, microphones/headset, CDSP/modem, Bluetooth.
  */
