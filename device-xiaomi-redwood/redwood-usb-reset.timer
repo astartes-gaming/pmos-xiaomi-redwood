@@ -1,8 +1,9 @@
 [Unit]
-Description=Re-initialise USB controller 30 s after boot (redwood workaround)
+Description=Start the redwood USB re-initialisation early in boot
 
 [Timer]
-OnBootSec=30s
+# The service itself waits for the ADSP; start it soon after boot
+OnBootSec=5s
 
 [Install]
 WantedBy=timers.target
