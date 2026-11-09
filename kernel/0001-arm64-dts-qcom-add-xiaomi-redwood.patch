@@ -58,10 +58,10 @@ index 0000000..1cdb8c5
 +};
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 new file mode 100644
-index 0000000..450af17
+index 0000000..63d8aac
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
-@@ -0,0 +1,1018 @@
+@@ -0,0 +1,1032 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
@@ -72,9 +72,9 @@ index 0000000..450af17
 + * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
 + *
 + * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
-+ * speakers (ADSP + AW88261),
++ * speakers (ADSP + AW88261), battery (pmic-glink battmgr),
 + * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
-+ * charger PMIC, pmic-glink, microphones/headset, CDSP/modem, Bluetooth.
++ * USB-C role switching, microphones/headset, CDSP/modem, Bluetooth.
 + */
 +
 +/dts-v1/;
@@ -141,6 +141,20 @@ index 0000000..450af17
 +			gpios = <&pm7325_gpios 6 GPIO_ACTIVE_LOW>;
 +			linux,code = <KEY_VOLUMEUP>;
 +		};
++	};
++
++	/*
++	 * Battery/charger are managed by the ADSP battery manager (vendor:
++	 * battery_charger). USB-C role/orientation not wired up yet: USB stays
++	 * in fixed peripheral mode for USB networking during bring-up.
++	 */
++	pmic-glink {
++		compatible = "qcom,sm7325-pmic-glink",
++			     "qcom,qcm6490-pmic-glink",
++			     "qcom,pmic-glink";
++
++		#address-cells = <1>;
++		#size-cells = <0>;
 +	};
 +
 +	/* Touch AVDD is switched by TLMM GPIO 107 on redwood (goodix,avdd-gpio) */
