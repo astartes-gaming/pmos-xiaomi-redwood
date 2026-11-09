@@ -1,4 +1,4 @@
-# postmarketOS for Xiaomi redwood — release notes (draft)
+# postmarketOS for Xiaomi redwood — pre-release 2026-11-09
 
 POCO X5 Pro 5G / Redmi Note 12 Pro Speed (SM7325), mainline kernel 7.2.9
 (sc7280-mainline) with the redwood device tree. Phosh, with Plasma Mobile
@@ -11,9 +11,11 @@ installable.
 
 Unlocked bootloader required. Installing **wipes userdata** (Android data).
 
-1. Boot the phone into fastboot (Volume Down + Power) and connect USB.
-2. Run `tools/flash-redwood.sh <dir>` with `boot.img` and
-   `xiaomi-redwood.img` from this release in `<dir>`.
+1. Download `boot.img`, `xiaomi-redwood.img.zst`, `flash-redwood.sh` and
+   `SHA256SUMS` into one folder; check them with `sha256sum -c SHA256SUMS`
+   and decompress: `zstd -d xiaomi-redwood.img.zst`.
+2. Boot the phone into fastboot (Volume Down + Power), connect USB and run
+   `sh flash-redwood.sh .` in that folder.
 3. First boot copies the phone's firmware from its own partitions and
    reboots once, so it takes a little longer. Log in as `user`, password
    `147147`, and change it (`passwd`).
