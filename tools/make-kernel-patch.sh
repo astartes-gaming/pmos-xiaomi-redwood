@@ -47,6 +47,7 @@ BM=drivers/power/supply/qcom_battmgr.c
 T=$(mktemp -d)
 git show HEAD:$BM > "$T/a"; cp "$T/a" "$T/b"
 python3 "$R/tools/battmgr-no-hang.py" "$T/b"
+python3 "$R/tools/battmgr-xiaomi-props.py" "$T/b"
 { sed -n '1,/^---$/p' "$P"; git diff; diff -u --label a/$BM --label b/$BM "$T/a" "$T/b" | sed "1i diff --git a/$BM b/$BM"; } > "$P.new"
 rm -rf "$T"
 mv "$P.new" "$P"

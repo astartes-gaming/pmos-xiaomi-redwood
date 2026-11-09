@@ -66,8 +66,11 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   (~8 s outage). UCSI role switch wired in DTS (kernel r125).
   - ✅ Physical replug on r11: USB back ~8 s after plug-in
   - ⬜ Real fix: re-init the PHY in-kernel on the charger's port event
-- ⬜ Battery: Xiaomi firmware numbers properties differently from ~12 on
-  (temperature, technology, cycle count read wrong)
+- ✅ Battery: Xiaomi firmware inserts BATT_CONSTANT_CURRENT at 12, shifting
+  IDs >= TEMP by one (MiCode redwood-s-oss qti_battery_charger.c). Kernel
+  r127 maps them: temp, technology, charge counter, cycle count, model now
+  correct. power_now reads 10 W at 0 A (meaning unclear); charge_full and
+  charge_full_design: firmware returns no data
 - ⬜ Compass: calibration / mount matrix (readings ~300 µT)
 - ⬜ AMIC3: silent on every route; believed unpopulated, confirm
 - ⬜ Plasma Mobile: clock under the camera cutout

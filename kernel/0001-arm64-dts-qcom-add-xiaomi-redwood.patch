@@ -2187,7 +2187,36 @@ index 643b8e2..019a1aa 100644
 diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
 --- a/drivers/power/supply/qcom_battmgr.c
 +++ b/drivers/power/supply/qcom_battmgr.c
-@@ -1374,7 +1374,7 @@
+@@ -9,6 +9,7 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/nvmem-consumer.h>
++#include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/property.h>
+@@ -313,6 +314,8 @@
+ 	struct pmic_glink_client *client;
+ 
+ 	enum qcom_battmgr_variant variant;
++	/* Xiaomi firmware: battery IDs >= BATT_TEMP are one higher */
++	bool xiaomi_bat_props;
+ 
+ 	struct power_supply *ac_psy;
+ 	struct power_supply *bat_psy;
+@@ -364,6 +367,11 @@
+ static int qcom_battmgr_request_property(struct qcom_battmgr *battmgr, int opcode,
+ 					 int property, u32 value)
+ {
++	if (battmgr->xiaomi_bat_props &&
++	    (opcode == BATTMGR_BAT_PROPERTY_GET || opcode == BATTMGR_BAT_PROPERTY_SET) &&
++	    property >= BATT_TEMP && property <= BATT_POWER_AVG)
++		property++;
++
+ 	struct qcom_battmgr_property_request request = {
+ 		.hdr.owner = cpu_to_le32(PMIC_GLINK_OWNER_BATTMGR),
+ 		.hdr.type = cpu_to_le32(PMIC_GLINK_REQ_RESP),
+@@ -1374,7 +1382,7 @@
  	unsigned int val;
  
  	if (payload_len < sizeof(__le32)) {
@@ -2196,8 +2225,13 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  			 opcode, len);
  		return;
  	}
-@@ -1384,19 +1384,19 @@
+@@ -1382,21 +1390,24 @@
+ 	switch (opcode) {
+ 	case BATTMGR_BAT_PROPERTY_GET:
  		property = le32_to_cpu(resp->intval.property);
++		if (battmgr->xiaomi_bat_props &&
++		    property > BATT_TEMP && property <= BATT_POWER_AVG + 1)
++			property--;
  		if (property == BATT_MODEL_NAME) {
  			if (payload_len != sizeof(resp->strval)) {
 -				dev_warn(battmgr->dev,
@@ -2220,7 +2254,7 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  			}
  
  			battmgr->error = le32_to_cpu(resp->intval.result);
-@@ -1483,11 +1483,11 @@
+@@ -1483,11 +1494,11 @@
  	case BATTMGR_USB_PROPERTY_GET:
  		property = le32_to_cpu(resp->intval.property);
  		if (payload_len != sizeof(resp->intval)) {
@@ -2234,7 +2268,7 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  		}
  
  		battmgr->error = le32_to_cpu(resp->intval.result);
-@@ -1524,11 +1524,11 @@
+@@ -1524,11 +1535,11 @@
  	case BATTMGR_WLS_PROPERTY_GET:
  		property = le32_to_cpu(resp->intval.property);
  		if (payload_len != sizeof(resp->intval)) {
@@ -2248,3 +2282,11 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  		}
  
  		battmgr->error = le32_to_cpu(resp->intval.result);
+@@ -1657,6 +1668,7 @@
+ 		battmgr->variant = (unsigned long)match->data;
+ 	else
+ 		battmgr->variant = QCOM_BATTMGR_SM8350;
++	battmgr->xiaomi_bat_props = of_machine_is_compatible("xiaomi,redwood");
+ 
+ 	ret = qcom_battmgr_charge_control_thresholds_init(battmgr);
+ 	if (ret < 0)
