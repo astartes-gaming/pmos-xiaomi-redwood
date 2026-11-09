@@ -13,6 +13,10 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 - ✅ Sensors: accelerometer / auto-rotate, light, proximity, magnetometer
 - ✅ USB networking (with a reset-timer workaround, see below)
 - ✅ Modem hardware (see Next for SIM tests)
+- ✅ IR blaster: ir-spi LED on spi15, /dev/lirc0 transmits (`ir-ctl -S nec:0x04`);
+  logged-in user gets access via uaccess
+  - ⬜ Needs you: confirm the LED lights (another phone's camera shows IR)
+    or that it controls a TV
 - ✅ Phosh (default), Plasma Mobile; clock clear of the camera cutout in Phosh
 
 ## Next
@@ -37,7 +41,6 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 
 ## Hardware not started
 
-- 🔧 IR blaster: ir-spi LED on spi15 (kernel r124 adds RC_CORE/LIRC/IR_SPI)
 - ⬜ NFC (nq@28 on i2c9 in the stock DT)
 - ⬜ Fingerprint reader (side key) — likely hard
 - ⬜ USB-C: host mode, video out if supported, role switching

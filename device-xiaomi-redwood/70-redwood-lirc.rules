@@ -1,0 +1,2 @@
+# IR blaster (ir-spi on spi15): let the logged-in user transmit via /dev/lirc*
+SUBSYSTEM=="lirc", TAG+="uaccess"

@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=8
+pkgrel=9
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -36,6 +36,7 @@ source="
 	redwood-usb-reset.timer
 	81-libssc-xiaomi-redwood.rules
 	90_redwood-cbd.gschema.override
+	70-redwood-lirc.rules
 "
 
 build() {
@@ -78,6 +79,10 @@ package() {
 	# Cell broadcast: also AMBER and test levels (SAE test alerts)
 	install -Dm644 "$srcdir"/90_redwood-cbd.gschema.override \
 		-t "$pkgdir"/usr/share/glib-2.0/schemas
+
+	# IR blaster: logged-in user may transmit (uaccess, before 73-seat-late)
+	install -Dm644 "$srcdir"/70-redwood-lirc.rules \
+		-t "$pkgdir"/usr/lib/udev/rules.d
 }
 
 sha512sums="
@@ -90,4 +95,5 @@ c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8e
 ed5745e15196a003d473f3648f30dda37e011eee08a6c7531fc2fa0b90e42513aa4d80db7a8e5563d3e008848d5a986ef55da0e89de77c04acf87aba880e3306  redwood-usb-reset.timer
 0f060e9bd7834ce9962e3e32dcd3d5276b7381e55fe10782282e235f56661741134915c63cdbc541a3a94b63c262c70038890aae01bbc82582007d7480fea2de  81-libssc-xiaomi-redwood.rules
 0360050ba16732556269426717d9637cd69a6690be0fc756e3894acfbb7fbe7c3f3b6b6a076fcd04816d024cc2c5a99fe564cc52298d296e6350c738fcdab409  90_redwood-cbd.gschema.override
+7080344c5c40f7f8ef244c8470a7aac7d1d1ed4f81dc9d0d734b299fc33b08570bc86ff1700c8f315590893e99a2a57d1255387ce741f0d4099187f1c28b2e76  70-redwood-lirc.rules
 "
