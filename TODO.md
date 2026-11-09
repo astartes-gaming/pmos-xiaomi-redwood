@@ -63,8 +63,8 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 
 ## Release
 
-- ⬜ Fastboot installer: `pmbootstrap export` images + a script that also
-  erases dtbo and handles `fastboot reboot bootloader`
+- 🔧 Fastboot installer: `tools/flash-redwood.sh` written (export images, erase
+  dtbo, flash boot + userdata, reboot-bootloader quirk); not yet run on a phone
 - ⬜ Recovery-flashable zip (`pmbootstrap install --android-recovery-zip`);
   needs deviceinfo partition settings and a working redwood recovery
 - ⬜ Public builds: fetch firmware from the user's own phone/ROM at install
