@@ -6,7 +6,7 @@
 # to this APKBUILD before building (tools/collect-firmware.sh).
 pkgname=firmware-xiaomi-redwood
 pkgver=1
-pkgrel=5
+pkgrel=6
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
@@ -25,6 +25,8 @@ source="
 	battmgr.jsn
 	aw88261_acf.bin
 	hexagonfs.tar.gz
+	msbtfw11.mbn
+	msnv11.bin
 "
 
 package() {
@@ -54,6 +56,11 @@ package() {
 	install -Dm644 "$srcdir"/battmgr.jsn "$q"/battmgr.jsn
 	install -Dm644 "$srcdir"/aw88261_acf.bin "$q"/aw88261_acf.bin
 
+	# WCN6750 Bluetooth patch + redwood NVM (modem partition), ahead of the
+	# generic linux-firmware copies via the postmarketos/ search path
+	install -Dm644 -t "$pkgdir"/lib/firmware/postmarketos/qca \
+		"$srcdir"/msbtfw11.mbn "$srcdir"/msnv11.bin
+
 	# Files hexagonrpcd serves to the ADSP sensor hub (tools/collect-sensors.sh):
 	# sensor configs, sns_reg.conf, this phone's calibrated registry (persist),
 	# ADSP libraries (dsp partition) and socinfo. Path is derived by
@@ -82,4 +89,6 @@ a026d6a9188f7cc0e1bc0b572206b5651aefbfdfd86eeed1b14151031814f9714191140dd9c9fb4e
 5bad891996a830b39e34ba43ad728cf69a81c5e9c5878fa57f87507a5aae61dff226ae2ff323ca82d70cee81f34ab40ac605d7568422f11b7458af56c5bc1530  battmgr.jsn
 5bd2c8a945893d52cc2df1922ec5cebc9a2f95f5d4a88e81959894edf0129e9e5a719f0983fe75912e188d436c5bfe77fa07341f253fa8af12e5734fb1512c71  aw88261_acf.bin
 abdb390e717eeed4652d366eb5b802d68ddcbcd136897de57e9f98708c3fd702a10808ab468de5fcd506ede3063a6f0698456345d843db8e442c7d2664c25458  hexagonfs.tar.gz
+274ce8915cd65cf313e83d94a5feb7f55596c7e8dcd4e3d1fc8d23465e5a57f8a5d474e7f3192206c9f605d6acd394bb75dde14532da98c6f33ebe85fb08b9fa  msbtfw11.mbn
+8678a102834d8729ef63acc9e238b01a48bea35c2d102d85129f928ae7d00d875dbaa8a7fad07510da1a5c7adcb5389af76a140af05fe8b5e03e286e201a04c5  msnv11.bin
 "
