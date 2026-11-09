@@ -41,7 +41,10 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 
 ## Hardware not started
 
-- ⬜ NFC (nq@28 on i2c9 in the stock DT)
+- ⬜ NFC: NXP SN1xx (vendor qcom,sn-nci) at 0x28 on **i2c4** (qupv3_se4),
+  VEN gpio38, FW gpio40, CLKREQ gpio39, IRQ gpio41, 1.8 V supply. Mainline
+  nxp-nci lists PN547/553/557 only and CONFIG_NFC is off; SN1xx support
+  unclear, low priority (few Linux NFC apps)
 - ⬜ Fingerprint reader (side key) — likely hard
 - ⬜ USB-C: host mode, video out if supported, role switching
 - ⬜ CDSP
