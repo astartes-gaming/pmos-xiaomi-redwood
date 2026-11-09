@@ -52,6 +52,10 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 
 ## Fixes and polish
 
+- ⬜ `reboot bootloader` (NVMEM reboot-mode, kernel r118+): first test on
+  r124 left the phone unreachable: no fastboot device on USB, no Linux.
+  Investigate what the bootloader does with the reboot reason before using it
+
 - ⬜ USB drop ~16 s into boot: find the real cause, drop redwood-usb-reset.timer
 - ⬜ Battery: Xiaomi firmware numbers properties differently from ~12 on
   (temperature, technology, cycle count read wrong)
