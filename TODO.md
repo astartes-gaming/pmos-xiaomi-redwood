@@ -107,8 +107,8 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 
 ## Release
 
-- 🔧 Fastboot installer: `tools/flash-redwood.sh` written (export images, erase
-  dtbo, flash boot + userdata, reboot-bootloader quirk); not yet run on a phone
+- ✅ Fastboot installer: `tools/flash-redwood.sh` tested end to end on
+  hardware (erase dtbo, flash boot + userdata, reboot bootloader, boot)
 - ⬜ Recovery-flashable zip (`pmbootstrap install --android-recovery-zip`);
   needs deviceinfo partition settings and a working redwood recovery
 - 🔧 Public builds: device r17 no longer depends on firmware-xiaomi-redwood
@@ -119,5 +119,8 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   and vendor (super) read-only, builds the same files (squash_mdt,
   ath11k_board2 with the hwc board file), reboots once. Verified: generated
   606 files byte-identical to the firmware package (ROOT= test run)
-  - ⬜ Fresh-install test without the firmware package (needs a wipe)
+  - ✅ Fresh install of a blob-free image via tools/flash-redwood.sh: first
+    boot installed the firmware (slot _b, hwc GL) and rebooted once; second
+    boot: modem/ADSP/WPSS running, touch fw, GPU, Wi-Fi, BT, sound card,
+    modem, battery, sensors, IR all up, no failed units
 - ⬜ GitHub Release with the installer files (ask before publishing: public)
