@@ -69,6 +69,8 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   ADSP is up, udev-triggered run on typec partner add, 20 s cooldown
   (~8 s outage). UCSI role switch wired in DTS (kernel r125).
   - ✅ Physical replug on r11: USB back ~8 s after plug-in
+  - ✅ r13: UCSI rebind occasionally times out (PPM init failed); the
+    script now retries until typec port0 appears
   - ⬜ Real fix: re-init the PHY in-kernel on the charger's port event
 - ✅ Battery: Xiaomi firmware inserts BATT_CONSTANT_CURRENT at 12, shifting
   IDs >= TEMP by one (MiCode redwood-s-oss qti_battery_charger.c). Kernel

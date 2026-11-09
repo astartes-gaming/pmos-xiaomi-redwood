@@ -42,10 +42,19 @@ sleep 2
 echo a600000.usb > $d/bind
 sleep 2
 [ -d $g ] && [ -z "$(cat $g/UDC)" ] && echo a600000.usb > $g/UDC
+# UCSI init sometimes times out ("PPM init failed") and the port never
+# appears; without it dwc3 gets no role. Retry until port0 shows up.
 if [ -e $u/pmic_glink.ucsi.0 ]; then
-	echo pmic_glink.ucsi.0 > $u/unbind
-	sleep 1
-	echo pmic_glink.ucsi.0 > $u/bind
+	for try in 1 2 3; do
+		echo pmic_glink.ucsi.0 > $u/unbind
+		sleep 1
+		echo pmic_glink.ucsi.0 > $u/bind
+		for i in $(seq 24); do
+			[ -e /sys/class/typec/port0 ] && break 2
+			sleep 0.5
+		done
+		echo "redwood-usb-reset: UCSI port missing, retry $try" >&2
+	done
 fi
 # The UCSI rebind re-adds the partner; keep the cooldown counting from now
 cut -d. -f1 /proc/uptime > $stamp
