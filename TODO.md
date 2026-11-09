@@ -76,9 +76,8 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 - ⬜ Plasma Mobile: no notch support upstream (plasma-mobile#276); its clock
   sits at the left, so the centre punch-hole may not cover anything
   - ⬜ Needs you: look at Plasma's status bar once
-- 🔧 Display: 120 Hz. Vendor DT has a single timing (120 Hz video mode, DSC)
-  and the panel driver uses it, so it should already run at 120 Hz
-  - ⬜ Measure vblank rate with the screen on (msm_mdss IRQ count / s)
+- ✅ Display: 120 Hz (vendor's single timing, video mode + DSC); measured
+  120 vblank IRQs/s with the screen on
 - ⬜ Waydroid (last)
 
 ## Release
