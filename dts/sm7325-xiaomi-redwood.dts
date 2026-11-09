@@ -1019,6 +1019,15 @@
 		};
 	};
 
+	/* Headphones get their own front end (hw:N,2), separate from the speaker */
+	mm3-dai-link {
+		link-name = "MultiMedia3";
+
+		cpu {
+			sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA3>;
+		};
+	};
+
 	wcd-playback-dai-link {
 		link-name = "WCD Playback";
 

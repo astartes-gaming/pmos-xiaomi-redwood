@@ -37,7 +37,10 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   playback via WCD938x HPH (RX_CODEC_DMA_RX_0, SoundWire RX). Needed the
   vendor 48 kHz SoundWire sample intervals (HPH_CLH 31, LO 7); kodiak's 63/3
   gave silence. UCM "Headphones" device (JackControl), analog gain -12 dB.
-  - ⬜ Needs you: log in, check PipeWire switches speaker <-> headphones
+  - ✅ r129/r14: headphones on their own front end (MultiMedia3, hw:N,2) so
+    PulseAudio gets one profile with both outputs; Phosh switches speaker
+    <-> headphones on plug/unplug (tested). The audio backend here is
+    PulseAudio (postmarketos-base-ui-audio-backend-pulseaudio)
   - ⬜ Headset mic (AMIC2): needs a headset with a mic
   - ⬜ Pop/static when playback stops
 - ⬜ **Suspend / battery life**: sleep, wake on call/SMS
