@@ -21,7 +21,7 @@ sensors, modem hardware). Calls and mobile data still need SIM testing. See
 | Sensors | ADSP sensor hub via hexagonrpcd: auto-rotate, light, proximity, compass |
 | Modem | boots, IMEI, network scan without a SIM; SIM tests pending |
 | IR blaster | ir-spi LED, `/dev/lirc0` |
-| USB networking / SSH, UFS, buttons | USB uses a reset-timer workaround |
+| USB networking / SSH, UFS, buttons | USB is re-initialised after boot and each plug-in (~8 s outage, workaround) |
 
 | Not yet | |
 |---|---|

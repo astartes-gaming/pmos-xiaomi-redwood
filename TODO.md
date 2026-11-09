@@ -58,13 +58,13 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   device does not enumerate on the PC until the cable is replugged
   (likely the same USB PHY state as the boot-time drop below)
 
-- 🔧 USB drop: the ADSP charger firmware re-detects the port at ADSP start
+- ✅ USB drop (worked around): the ADSP charger firmware re-detects the port at ADSP start
   (~16 s into boot) and on every plug-in, leaving the HS PHY dead. Role
   toggle / gadget rebind don't recover; rebinding dwc3-qcom (PHY re-init)
   plus UCSI (stale role-switch handle) does. Device r11: boot run after the
   ADSP is up, udev-triggered run on typec partner add, 20 s cooldown
   (~8 s outage). UCSI role switch wired in DTS (kernel r125).
-  - ⬜ Needs you: unplug/replug once on r11 (simulated plug event works)
+  - ✅ Physical replug on r11: USB back ~8 s after plug-in
   - ⬜ Real fix: re-init the PHY in-kernel on the charger's port event
 - ⬜ Battery: Xiaomi firmware numbers properties differently from ~12 on
   (temperature, technology, cycle count read wrong)
