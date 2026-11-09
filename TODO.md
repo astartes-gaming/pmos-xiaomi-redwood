@@ -73,8 +73,12 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   charge_full_design: firmware returns no data
 - ⬜ Compass: calibration / mount matrix (readings ~300 µT)
 - ⬜ AMIC3: silent on every route; believed unpopulated, confirm
-- ⬜ Plasma Mobile: clock under the camera cutout
-- ⬜ Display: 120 Hz mode
+- ⬜ Plasma Mobile: no notch support upstream (plasma-mobile#276); its clock
+  sits at the left, so the centre punch-hole may not cover anything
+  - ⬜ Needs you: look at Plasma's status bar once
+- 🔧 Display: 120 Hz. Vendor DT has a single timing (120 Hz video mode, DSC)
+  and the panel driver uses it, so it should already run at 120 Hz
+  - ⬜ Measure vblank rate with the screen on (msm_mdss IRQ count / s)
 - ⬜ Waydroid (last)
 
 ## Release
