@@ -8,7 +8,7 @@
  * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
  *
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
- * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x), Bluetooth (WCN6750 on uart7),
+ * speakers (ADSP + AW88261), headphones (WCD938x HPH), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x), Bluetooth (WCN6750 on uart7),
  * microphones (WCD938x: AMIC1 main, AMIC5 secondary), UFS, USB networking,
  * modem (MPSS + IPA), IR blaster, buttons, touchscreen. Not yet enabled: PM7325B
  * USB-C role switching, headset detection, CDSP.
@@ -949,6 +949,10 @@
 		qcom,sd-lines = <1>;
 	};
 
+	dai@113 {
+		reg = <RX_CODEC_DMA_RX_0>;
+	};
+
 	dai@120 {
 		reg = <TX_CODEC_DMA_TX_3>;
 	};
@@ -1012,6 +1016,22 @@
 
 		cpu {
 			sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA2>;
+		};
+	};
+
+	wcd-playback-dai-link {
+		link-name = "WCD Playback";
+
+		codec {
+			sound-dai = <&wcd9385 0>, <&swr0 0>, <&lpass_rx_macro 0>;
+		};
+
+		cpu {
+			sound-dai = <&q6afedai RX_CODEC_DMA_RX_0>;
+		};
+
+		platform {
+			sound-dai = <&q6routing>;
 		};
 	};
 
@@ -1089,6 +1109,12 @@
 };
 
 &swr0 {
+	/*
+	 * Sample intervals from the vendor 48 kHz table (lahaina-port-config.h
+	 * rx_frame_params_default): HPH_CLH 31 and LO 7; kodiak has 63 and 3.
+	 */
+	qcom,ports-sinterval-low = /bits/ 8 <0x03 0x1f 0x1f 0x07 0x03>;
+
 	status = "okay";
 
 	wcd_rx: codec@0,4 {

@@ -33,9 +33,13 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
     to see what Chilean carriers send
 - ⬜ **Voice calls**: earpiece + mic routing for calls
   - ⬜ Needs you: make and talk on a test call
-- ⬜ **Headset jack**: plug detection, headphone playback (WCD938x RX side),
-  headset mic (AMIC2, already in UCM, untested)
-  - ⬜ Needs you: plug in wired headphones
+- ✅ **Headphones** (kernel r128, device r12): jack detection, stereo
+  playback via WCD938x HPH (RX_CODEC_DMA_RX_0, SoundWire RX). Needed the
+  vendor 48 kHz SoundWire sample intervals (HPH_CLH 31, LO 7); kodiak's 63/3
+  gave silence. UCM "Headphones" device (JackControl), analog gain -12 dB.
+  - ⬜ Needs you: log in, check PipeWire switches speaker <-> headphones
+  - ⬜ Headset mic (AMIC2): needs a headset with a mic
+  - ⬜ Pop/static when playback stops
 - ⬜ **Suspend / battery life**: sleep, wake on call/SMS
 
 ## Hardware not started
@@ -71,7 +75,17 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   r127 maps them: temp, technology, charge counter, cycle count, model now
   correct. power_now reads 10 W at 0 A (meaning unclear); charge_full and
   charge_full_design: firmware returns no data
-- ⬜ Compass: calibration / mount matrix (readings ~300 µT)
+- 🔧 Compass: the compass (iio-sensor-proxy / libssc) uses the DSP's fused
+  'rotv' rotation vector, which calibrates internally. Only the raw 'mag'
+  magnetometer shows the hard-iron offset (~320 uT; figure-8 fit gives
+  offset (-257, -194, +31) uT, radius 19.8 uT vs ~23 uT in Santiago). libssc
+  could subtract SSC 'mag_cal' bias (sns_mag_cal.json ships) for raw users.
+  - ❌ 90 deg turn test: heading moves the right way but only ~40-50%
+    (48 deg cw, 36 deg ccw), so rotv is NOT removing the hard-iron offset.
+    Writing the fitted offset into ak0991x fac_cal.bias (registry) did not
+    change raw mag and made the turn test worse (15 deg); reverted.
+    Next: find how the DSP fusion gets mag calibration (mag_cal anomaly
+    threshold is 200 uT, below the ~320 uT raw field), else correct in libssc
 - ⬜ AMIC3: silent on every route; believed unpopulated, confirm
 - ⬜ Plasma Mobile: no notch support upstream (plasma-mobile#276); its clock
   sits at the left, so the centre punch-hole may not cover anything
