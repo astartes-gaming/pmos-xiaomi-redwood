@@ -1,0 +1,5 @@
+# Cell broadcast (cellbroadcastd): besides the default severity levels, also
+# receive AMBER alerts and test messages, so Chile's SAE test alerts
+# ("SENAPRED: PRUEBA del Sistema de Alerta de Emergencia") are shown too.
+[org.freedesktop.cbd]
+levels=['presidential', 'extreme', 'severe', 'public-safety', 'amber', 'test']

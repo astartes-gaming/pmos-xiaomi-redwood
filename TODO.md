@@ -22,8 +22,12 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   (IMEI, firmware MPSS.HI.4.3.c2, carrier config Entel_CL). Radio online:
   network scan sees Claro, Movistar, WOM, Entel; camps on WCDMA for emergency.
   - ⬜ Needs you: insert a SIM for registration, LTE/5G, data, SMS
-- ⬜ **Cell broadcast**: cellbroadcastd listening on emergency (SAE) channels;
-  log all channels for a few days to see what Chilean carriers send
+- 🔧 **Cell broadcast**: cellbroadcastd runs; device r8 enables the test and
+  AMBER levels on top of the defaults (country channel mode), so SAE test
+  alerts show. ModemManager only takes channel lists on an enabled modem.
+  - ⬜ Needs a SIM: confirm channels get set; then log all channels for a
+    few days (channel-mode none + `mmcli --cell-broadcast-set-channels=0-65535`)
+    to see what Chilean carriers send
 - ⬜ **Voice calls**: earpiece + mic routing for calls
   - ⬜ Needs you: make and talk on a test call
 - ⬜ **Headset jack**: plug detection, headphone playback (WCD938x RX side),

@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=7
+pkgrel=8
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -35,6 +35,7 @@ source="
 	redwood-usb-reset.service
 	redwood-usb-reset.timer
 	81-libssc-xiaomi-redwood.rules
+	90_redwood-cbd.gschema.override
 "
 
 build() {
@@ -73,6 +74,10 @@ package() {
 	# mount matrix for iio-sensor-proxy
 	install -Dm644 "$srcdir"/81-libssc-xiaomi-redwood.rules \
 		"$pkgdir"/usr/lib/udev/rules.d/81-libssc-xiaomi-redwood.rules
+
+	# Cell broadcast: also AMBER and test levels (SAE test alerts)
+	install -Dm644 "$srcdir"/90_redwood-cbd.gschema.override \
+		-t "$pkgdir"/usr/share/glib-2.0/schemas
 }
 
 sha512sums="
@@ -84,4 +89,5 @@ c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8e
 0108d88fd861da3bf4e76a09db04a1371618e1098d374c7f5aa9fa493beacae77403f01ec4884c076df1b61324a1d6ec9e80dfb3efe206cd5ce6111dbb8f1dd7  redwood-usb-reset.service
 ed5745e15196a003d473f3648f30dda37e011eee08a6c7531fc2fa0b90e42513aa4d80db7a8e5563d3e008848d5a986ef55da0e89de77c04acf87aba880e3306  redwood-usb-reset.timer
 0f060e9bd7834ce9962e3e32dcd3d5276b7381e55fe10782282e235f56661741134915c63cdbc541a3a94b63c262c70038890aae01bbc82582007d7480fea2de  81-libssc-xiaomi-redwood.rules
+0360050ba16732556269426717d9637cd69a6690be0fc756e3894acfbb7fbe7c3f3b6b6a076fcd04816d024cc2c5a99fe564cc52298d296e6350c738fcdab409  90_redwood-cbd.gschema.override
 "
