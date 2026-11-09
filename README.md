@@ -1,5 +1,7 @@
 # postmarketOS for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
 
+> **Unofficial port.** Please do not report bugs from this port to the postmarketOS / Nura developers. Open an issue in this repository instead.
+
 Work-in-progress postmarketOS port for `xiaomi-redwood` (Snapdragon 778G, SM7325), using the
 mainline `linux-postmarketos-qcom-sc7280` kernel.
 
