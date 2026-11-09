@@ -24,15 +24,21 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   EFS and the modem_pr carrier configs, IPA up, ModemManager detects it
   (IMEI, firmware MPSS.HI.4.3.c2, carrier config Entel_CL). Radio online:
   network scan sees Claro, Movistar, WOM, Entel; camps on WCDMA for emergency.
-  - ⬜ Needs you: insert a SIM for registration, LTE/5G, data, SMS
+  - ✅ SIM (Entel): registered home, LTE + 5G NR (NSA; NR leg attaches during
+    traffic), mobile data via NM gsm connection (APN imovil.entelpcs.cl):
+    ping OK, 6.9 Mbit/s on weak signal (RSRP -120 dBm)
+  - ⬜ SMS receive / send
 - 🔧 **Cell broadcast**: cellbroadcastd runs; device r8 enables the test and
   AMBER levels on top of the defaults (country channel mode), so SAE test
   alerts show. ModemManager only takes channel lists on an enabled modem.
-  - ⬜ Needs a SIM: confirm channels get set; then log all channels for a
+  - ✅ With SIM: modem takes the channel list 4370-4379, 4397 (Chile SAE)
+  - ⬜ Log all channels for a
     few days (channel-mode none + `mmcli --cell-broadcast-set-channels=0-65535`)
     to see what Chilean carriers send
-- ⬜ **Voice calls**: earpiece + mic routing for calls
-  - ⬜ Needs you: make and talk on a test call
+- 🔧 **Voice calls**: outgoing call connects (state ringing-out), no audio:
+  callaudiod "no available output found". Needs a q6voice (CVP/CVS) kernel
+  driver (not in mainline; out-of-tree in sdm845-mainline) plus UCM
+  VoiceCall verb with earpiece routing
 - ✅ **Headphones** (kernel r128, device r12): jack detection, stereo
   playback via WCD938x HPH (RX_CODEC_DMA_RX_0, SoundWire RX). Needed the
   vendor 48 kHz SoundWire sample intervals (HPH_CLH 31, LO 7); kodiak's 63/3
