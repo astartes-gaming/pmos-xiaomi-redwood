@@ -37,10 +37,16 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   - ⬜ Log all channels for a
     few days (channel-mode none + `mmcli --cell-broadcast-set-channels=0-65535`)
     to see what Chilean carriers send
-- 🔧 **Voice calls**: outgoing call connects (state ringing-out), no audio:
-  callaudiod "no available output found". Needs a q6voice (CVP/CVS) kernel
-  driver (not in mainline; out-of-tree in sdm845-mainline) plus UCM
-  VoiceCall verb with earpiece routing
+- 🔧 **Voice calls**: q6voice (q6mvm/q6cvs/q6cvp) is in the kernel; DT now
+  enables it with a VoiceMMode1 link (hw:N,3), UCM "Voice Call" verb
+  (earpiece = top AW88261 in Receiver profile, speakerphone, Mic1/Mic2,
+  dummystreamhack). Downlink works: the other party is heard in the earpiece.
+  - ⬜ Uplink silent: mic path powered identically to recording, but in call
+    mode TX_CODEC_DMA_TX_3 yields zeros (also to MultiMedia2). Lost inside the
+    DSP voice session; compare with dubai/fp5 (same stack, calls work)
+  - ⬜ Mic level ~48 dB low everywhere (peaks capped ~1/256 FS): looks like a
+    24/32-bit alignment issue on the TX codec DMA port
+  - ⬜ Headphones in calls: q6routing has no RX_CODEC_DMA_RX_0 voice mixer
 - ✅ **Headphones** (kernel r128, device r12): jack detection, stereo
   playback via WCD938x HPH (RX_CODEC_DMA_RX_0, SoundWire RX). Needed the
   vendor 48 kHz SoundWire sample intervals (HPH_CLH 31, LO 7); kodiak's 63/3
