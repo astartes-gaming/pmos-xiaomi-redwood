@@ -45,8 +45,9 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   nxp-nci lists PN547/553/557 only and CONFIG_NFC is off; SN1xx support
   unclear, low priority (few Linux NFC apps)
 - ⬜ Fingerprint reader (side key) — likely hard
-- 🔧 USB-C: role switching wired (UCSI, r125); host mode / OTG untested,
-  video out if supported
+- ✅ USB-C host mode / OTG: UCSI switches dwc3 to host (r125); 8BitDo USB
+  keyboard works through an OTG adapter (after the ~8 s plug-in reset).
+- ⬜ USB-C: video out, if the port supports it
 - ⬜ CDSP
 - ⬜ Cameras — hardest, long term
 
