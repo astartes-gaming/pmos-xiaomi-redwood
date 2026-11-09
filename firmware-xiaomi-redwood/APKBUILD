@@ -6,7 +6,7 @@
 # to this APKBUILD before building (tools/collect-firmware.sh).
 pkgname=firmware-xiaomi-redwood
 pkgver=1
-pkgrel=3
+pkgrel=4
 pkgdesc="Firmware for Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
 arch="aarch64"
@@ -22,6 +22,7 @@ source="
 	adspr.jsn
 	adsps.jsn
 	adspua.jsn
+	battmgr.jsn
 	aw88261_acf.bin
 "
 
@@ -49,8 +50,10 @@ package() {
 	install -Dm644 "$srcdir"/adspr.jsn "$q"/adspr.jsn
 	install -Dm644 "$srcdir"/adsps.jsn "$q"/adsps.jsn
 	install -Dm644 "$srcdir"/adspua.jsn "$q"/adspua.jsn
+	install -Dm644 "$srcdir"/battmgr.jsn "$q"/battmgr.jsn
 	install -Dm644 "$srcdir"/aw88261_acf.bin "$q"/aw88261_acf.bin
 }
+
 
 
 
@@ -65,5 +68,6 @@ c818faf2afc566c5483e949cd271bebe9d754d1755c636df0bac3ab6ecbea3820afe31363e2d4049
 a026d6a9188f7cc0e1bc0b572206b5651aefbfdfd86eeed1b14151031814f9714191140dd9c9fb4ebad4da6d76bee14c0f27e2f164dba6749e8a7818d6d9578a  adspr.jsn
 00bdba8e7e4d7ee30806fc245f5101c7b66ec4b92833d9be99326f977d8fd4f9712b16184ea330359820768dc54758744d857d8dd7209e7f0a2231ab196435f2  adsps.jsn
 0d4ed22c7eb1866f43032e5cf6ac2f196f02c3dc8220c49124d8e2c52bea559f63fa505e7fa60aba2c04ab6b1f08528306d60a31bd5426e16df3eb3e86f9a483  adspua.jsn
+5bad891996a830b39e34ba43ad728cf69a81c5e9c5878fa57f87507a5aae61dff226ae2ff323ca82d70cee81f34ab40ac605d7568422f11b7458af56c5bc1530  battmgr.jsn
 5bd2c8a945893d52cc2df1922ec5cebc9a2f95f5d4a88e81959894edf0129e9e5a719f0983fe75912e188d436c5bfe77fa07341f253fa8af12e5734fb1512c71  aw88261_acf.bin
 "

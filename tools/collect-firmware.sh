@@ -21,7 +21,7 @@ python3 "$here/tools/ath11k_board2.py" "$out/board-2.bin" \
 	"bus=ahb,qmi-chip-id=1,qmi-board-id=255=$modem/qca6750/bd_m20gl.elf"
 cp "$modem/qca6750/regdb.bin" "$out/"
 python3 "$here/tools/squash_mdt.py" "$modem/adsp.mdt" "$out/adsp.mbn"
-cp "$modem/adspr.jsn" "$modem/adsps.jsn" "$modem/adspua.jsn" "$out/"
+cp "$modem/adspr.jsn" "$modem/adsps.jsn" "$modem/adspua.jsn" "$modem/battmgr.jsn" "$out/"
 cp "$tmp/aw882xx_acf.bin" "$out/aw88261_acf.bin"
 rm -rf "$tmp"
 echo "firmware copied to $out"

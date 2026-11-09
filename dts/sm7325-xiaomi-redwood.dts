@@ -8,9 +8,9 @@
  * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
  *
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
- * speakers (ADSP + AW88261),
+ * speakers (ADSP + AW88261), battery (pmic-glink battmgr),
  * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
- * charger PMIC, pmic-glink, microphones/headset, CDSP/modem, Bluetooth.
+ * USB-C role switching, microphones/headset, CDSP/modem, Bluetooth.
  */
 
 /dts-v1/;
@@ -77,6 +77,20 @@
 			gpios = <&pm7325_gpios 6 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_VOLUMEUP>;
 		};
+	};
+
+	/*
+	 * Battery/charger are managed by the ADSP battery manager (vendor:
+	 * battery_charger). USB-C role/orientation not wired up yet: USB stays
+	 * in fixed peripheral mode for USB networking during bring-up.
+	 */
+	pmic-glink {
+		compatible = "qcom,sm7325-pmic-glink",
+			     "qcom,qcm6490-pmic-glink",
+			     "qcom,pmic-glink";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
 	};
 
 	/* Touch AVDD is switched by TLMM GPIO 107 on redwood (goodix,avdd-gpio) */
