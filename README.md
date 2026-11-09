@@ -40,7 +40,7 @@ Bring-up requirements found on this device:
 | Path | Purpose |
 |---|---|
 | `device-xiaomi-redwood/` | pmaports device package, based on `device-nothing-spacewar` |
-| `firmware-xiaomi-redwood/` | firmware package (blobs repo still to be created) |
+| `firmware-xiaomi-redwood/` | optional firmware package built from your own phone's blobs (`tools/collect-firmware.sh`); not needed, see below |
 | `dts/` | mainline device tree for sc7280-mainline/linux |
 | `kernel/` | patch adding the DTS to the kernel, plus a script to apply it (and simpledrm) to pmaports |
 | `docs/BRINGUP.md` | step-by-step bring-up checklist |
@@ -54,6 +54,10 @@ kernel/apply-to-pmaports.sh
 pmbootstrap checksum device-xiaomi-redwood linux-postmarketos-qcom-sc7280
 pmbootstrap init                       # now choose vendor "xiaomi", device "redwood"
 pmbootstrap install
+# No blobs needed: on first boot the phone copies its firmware from its own
+# partitions (modem, bluetooth, dsp, persist, vendor) and reboots once.
+# Optional: build firmware-xiaomi-redwood from your own phone and add it to
+# `pmbootstrap config extra_packages` to ship the blobs in the image instead.
 pmbootstrap flasher boot               # RAM-only test boot, nothing written
 # install for real (WIPES userdata; erases dtbo, flashes boot + rootfs):
 pmbootstrap export /tmp/redwood

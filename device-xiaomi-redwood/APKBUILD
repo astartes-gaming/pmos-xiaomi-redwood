@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=16
+pkgrel=17
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -28,7 +28,6 @@ depends="
 	device-mapper
 "
 makedepends="devicepkg-dev"
-subpackages="$pkgname-nonfree-firmware:nonfree_firmware"
 source="
 	deviceinfo
 	modules-initfs
@@ -118,11 +117,6 @@ package() {
 		-t "$pkgdir"/usr/lib/udev/rules.d
 }
 
-nonfree_firmware() {
-	pkgdesc="Firmware copied from a redwood (otherwise installed from the phone's own partitions on first boot)"
-	depends="firmware-xiaomi-redwood"
-	mkdir "$subpkgdir"
-}
 
 sha512sums="
 a20d359bd6cf77faccd712cc5ff589eb0adb1932bb6628fe2b973753d56c02ee7cb3d7af784beb3e85dabe87a85320b8a501aae1574397bafda9a78d258860c2  deviceinfo
