@@ -15,8 +15,7 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 - ✅ Modem hardware (see Next for SIM tests)
 - ✅ IR blaster: ir-spi LED on spi15, /dev/lirc0 transmits (`ir-ctl -S nec:0x04`);
   logged-in user gets access via uaccess
-  - ⬜ Needs you: confirm the LED lights (another phone's camera shows IR)
-    or that it controls a TV
+  - ✅ LED confirmed on hardware (seen flashing through a phone camera)
 - ✅ Phosh (default), Plasma Mobile; clock clear of the camera cutout in Phosh
 
 ## Next
