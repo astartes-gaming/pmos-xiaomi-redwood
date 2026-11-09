@@ -1,0 +1,8 @@
+[Unit]
+Description=Re-initialise USB controller 30 s after boot (redwood workaround)
+
+[Timer]
+OnBootSec=30s
+
+[Install]
+WantedBy=timers.target
