@@ -1,0 +1,7 @@
+[Unit]
+Description=Re-initialise USB after a cable plug-in (redwood workaround)
+After=redwood-usb-reset.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/redwood-usb-reset plug

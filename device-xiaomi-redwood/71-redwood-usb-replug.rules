@@ -1,0 +1,2 @@
+# Cable plugged in: the charger firmware breaks the USB PHY, re-initialise it
+SUBSYSTEM=="typec", ACTION=="add", KERNEL=="port0-partner", TAG+="systemd", ENV{SYSTEMD_WANTS}+="redwood-usb-replug.service"
