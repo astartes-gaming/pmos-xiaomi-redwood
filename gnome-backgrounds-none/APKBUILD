@@ -1,0 +1,21 @@
+# Maintainer: diegosace2000 <diegosace2000@users.noreply.github.com>
+#
+# Empty stand-in for gnome-backgrounds: postmarketos-base-ui-gnome depends on
+# it, so the real package can't be removed. This provides the name without
+# shipping any wallpapers; install it with `apk add gnome-backgrounds-none`
+# and the real one is replaced.
+pkgname=gnome-backgrounds-none
+pkgver=1
+pkgrel=0
+pkgdesc="Empty replacement for gnome-backgrounds (no wallpapers)"
+url="https://github.com/astartes-gaming/pmos-xiaomi-redwood"
+arch="noarch"
+license="MIT"
+provides="gnome-backgrounds=99999"
+provider_priority=100
+replaces="gnome-backgrounds"
+options="!check"
+
+package() {
+	mkdir -p "$pkgdir"
+}
