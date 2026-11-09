@@ -58,10 +58,10 @@ index 0000000..1cdb8c5
 +};
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 new file mode 100644
-index 0000000..63d8aac
+index 0000000..37cd059
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
-@@ -0,0 +1,1032 @@
+@@ -0,0 +1,1046 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
@@ -72,7 +72,7 @@ index 0000000..63d8aac
 + * (arch/arm64/boot/dts/vendor/qcom/redwood-sm7325*.dtsi).
 + *
 + * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
-+ * speakers (ADSP + AW88261), battery (pmic-glink battmgr),
++ * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927),
 + * UFS, USB networking, buttons, touchscreen. Not yet enabled: PM7325B
 + * USB-C role switching, microphones/headset, CDSP/modem, Bluetooth.
 + */
@@ -790,6 +790,20 @@ index 0000000..63d8aac
 +		awinic,audio-channel = <0>;
 +
 +		#sound-dai-cells = <0>;
++	};
++};
++
++&i2c9 {
++	clock-frequency = <400000>;
++
++	status = "okay";
++
++	/* Awinic AW8692x haptics (vendor: haptic_hv@5a on qupv3_se9_i2c) */
++	vibrator@5a {
++		compatible = "awinic,aw86927";
++		reg = <0x5a>;
++		interrupts-extended = <&tlmm 18 IRQ_TYPE_EDGE_FALLING>;
++		reset-gpios = <&tlmm 35 GPIO_ACTIVE_LOW>;
 +	};
 +};
 +
