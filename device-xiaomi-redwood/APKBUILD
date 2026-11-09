@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=2
+pkgrel=3
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -26,6 +26,8 @@ makedepends="devicepkg-dev"
 source="
 	deviceinfo
 	modules-initfs
+	ucm-redwood.conf
+	ucm-HiFi.conf
 "
 
 build() {
@@ -34,9 +36,20 @@ build() {
 
 package() {
 	devicepkg_package $startdir $pkgname
+
+	# ALSA UCM: speakers (AW88261 via Primary MI2S)
+	install -Dm644 "$srcdir"/ucm-redwood.conf \
+		"$pkgdir"/usr/share/alsa/ucm2/Xiaomi/redwood/redwood.conf
+	install -Dm644 "$srcdir"/ucm-HiFi.conf \
+		"$pkgdir"/usr/share/alsa/ucm2/Xiaomi/redwood/HiFi.conf
+	mkdir -p "$pkgdir"/usr/share/alsa/ucm2/conf.d/sm7325
+	ln -s ../../Xiaomi/redwood/redwood.conf \
+		"$pkgdir"/usr/share/alsa/ucm2/conf.d/sm7325/redwood.conf
 }
 
 sha512sums="
 a20d359bd6cf77faccd712cc5ff589eb0adb1932bb6628fe2b973753d56c02ee7cb3d7af784beb3e85dabe87a85320b8a501aae1574397bafda9a78d258860c2  deviceinfo
 c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8ef5d68e67c625d551e67c790ea01b103fcf38848e8aebfdf1  modules-initfs
+96d0ed8d44da688a30aff6fc12b480ee99eba9b298b0b9f38a0e93e2495474cc51cae0378139503a204652e62eee4c5d7853f61d51d851dd51fc361dcebc0ab5  ucm-redwood.conf
+599b551784218bff8eb04f29cc785ffb7216707359080828ea4c3ec3b4bd606cc4e05122689a996cad4037cdefbf3079543fea1512b31ae919ec065cffb3ed2f  ucm-HiFi.conf
 "
