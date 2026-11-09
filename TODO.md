@@ -46,7 +46,8 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   nxp-nci lists PN547/553/557 only and CONFIG_NFC is off; SN1xx support
   unclear, low priority (few Linux NFC apps)
 - ⬜ Fingerprint reader (side key) — likely hard
-- ⬜ USB-C: host mode, video out if supported, role switching
+- 🔧 USB-C: role switching wired (UCSI, r125); host mode / OTG untested,
+  video out if supported
 - ⬜ CDSP
 - ⬜ Cameras — hardest, long term
 
@@ -57,7 +58,13 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
   device does not enumerate on the PC until the cable is replugged
   (likely the same USB PHY state as the boot-time drop below)
 
-- ⬜ USB drop ~16 s into boot: find the real cause, drop redwood-usb-reset.timer
+- 🔧 USB drop ~16 s into boot: caused by the ADSP charger firmware starting
+  (re-detects the port; HS PHY dead afterwards). Role toggle / gadget rebind
+  don't recover, only a dwc3-qcom rebind (PHY re-init). Device r10 rebinds
+  right after the ADSP is up (~5 s outage instead of ~20 s). UCSI role
+  switch wired in DTS (kernel r125).
+  - ⬜ Needs you: unplug/replug the cable after boot; does USB come back?
+  - ⬜ Real fix: re-init the PHY in-kernel on the charger's port event
 - ⬜ Battery: Xiaomi firmware numbers properties differently from ~12 on
   (temperature, technology, cycle count read wrong)
 - ⬜ Compass: calibration / mount matrix (readings ~300 µT)

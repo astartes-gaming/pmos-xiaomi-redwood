@@ -58,10 +58,10 @@ index 0000000..1cdb8c5
 +};
 diff --git a/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
 new file mode 100644
-index 0000000..c4ea6df
+index 0000000..bba4968
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/sm7325-xiaomi-redwood.dts
-@@ -0,0 +1,1307 @@
+@@ -0,0 +1,1333 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed (redwood)
@@ -182,9 +182,10 @@ index 0000000..c4ea6df
 +	};
 +
 +	/*
-+	 * Battery/charger are managed by the ADSP battery manager (vendor:
-+	 * battery_charger). USB-C role/orientation not wired up yet: USB stays
-+	 * in fixed peripheral mode for USB networking during bring-up.
++	 * Battery/charger and the USB-C port are managed by the ADSP firmware.
++	 * The port's data role reaches dwc3 through UCSI + role switch; without
++	 * it the controller lost its session when the ADSP re-detected the port
++	 * (~15 s into boot). USB 2.0 only, so just the HS endpoint.
 +	 */
 +	pmic-glink {
 +		compatible = "qcom,sm7325-pmic-glink",
@@ -193,6 +194,26 @@ index 0000000..c4ea6df
 +
 +		#address-cells = <1>;
 +		#size-cells = <0>;
++
++		connector@0 {
++			compatible = "usb-c-connector";
++			reg = <0>;
++			power-role = "dual";
++			data-role = "dual";
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++
++					pmic_glink_hs_in: endpoint {
++						remote-endpoint = <&usb_1_dwc3_hs>;
++					};
++				};
++			};
++		};
 +	};
 +
 +	/* Touch AVDD is switched by TLMM GPIO 107 on redwood (goodix,avdd-gpio) */
@@ -1351,15 +1372,20 @@ index 0000000..c4ea6df
 +};
 +
 +&usb_1 {
-+	/* USB 2.0 only, fixed peripheral mode for USB networking during bring-up */
++	/* USB 2.0 only */
 +	qcom,select-utmi-as-pipe-clk;
 +
-+	dr_mode = "peripheral";
++	dr_mode = "otg";
++	usb-role-switch;
 +	maximum-speed = "high-speed";
 +	phys = <&usb_1_hsphy>;
 +	phy-names = "usb2-phy";
 +
 +	status = "okay";
++};
++
++&usb_1_dwc3_hs {
++	remote-endpoint = <&pmic_glink_hs_in>;
 +};
 +
 +&usb_1_hsphy {
