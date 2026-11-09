@@ -42,7 +42,13 @@ a = 'obj-$(CONFIG_DRM_PANEL_XIAOMI_42_02_0A) += panel-l9-42-02-0a-dsc.o\n'
 open(m, 'w').write(s.replace(a, a + 'obj-$(CONFIG_DRM_PANEL_XIAOMI_M20_42_0D_0B) += panel-xiaomi-m20-42-0d-0b.o\n', 1))
 PY
 git add -N $Q/sm7325-xiaomi-redwood.dts $Q/sm7325-xiaomi-redwood-ft.dts $PN/panel-xiaomi-m20-42-0d-0b.c
-{ sed -n '1,/^---$/p' "$P"; git diff; } > "$P.new"
+# qcom_battmgr.c is outside the sparse checkout: diff it from the object store
+BM=drivers/power/supply/qcom_battmgr.c
+T=$(mktemp -d)
+git show HEAD:$BM > "$T/a"; cp "$T/a" "$T/b"
+python3 "$R/tools/battmgr-no-hang.py" "$T/b"
+{ sed -n '1,/^---$/p' "$P"; git diff; diff -u --label a/$BM --label b/$BM "$T/a" "$T/b" | sed "1i diff --git a/$BM b/$BM"; } > "$P.new"
+rm -rf "$T"
 mv "$P.new" "$P"
 git reset -q
 git checkout -q -- $Q/Makefile $F $PN/Kconfig $PN/Makefile

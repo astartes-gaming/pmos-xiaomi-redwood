@@ -1883,3 +1883,42 @@ index 643b8e2..019a1aa 100644
  			get_fw_i_flag = true;
  		}
  	} else {
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -1388,7 +1388,7 @@
+ 					 "invalid payload length for BATT_MODEL_NAME request: %zd\n",
+ 					 payload_len);
+ 				battmgr->error = -ENODATA;
+-				return;
++				goto out_complete;
+ 			}
+ 		} else {
+ 			if (payload_len != sizeof(resp->intval)) {
+@@ -1396,7 +1396,7 @@
+ 					 "invalid payload length for %#x request: %zd\n",
+ 					 property, payload_len);
+ 				battmgr->error = -ENODATA;
+-				return;
++				goto out_complete;
+ 			}
+ 
+ 			battmgr->error = le32_to_cpu(resp->intval.result);
+@@ -1487,7 +1487,7 @@
+ 				 "invalid payload length for %#x request: %zd\n",
+ 				 property, payload_len);
+ 			battmgr->error = -ENODATA;
+-			return;
++			goto out_complete;
+ 		}
+ 
+ 		battmgr->error = le32_to_cpu(resp->intval.result);
+@@ -1528,7 +1528,7 @@
+ 				 "invalid payload length for %#x request: %zd\n",
+ 				 property, payload_len);
+ 			battmgr->error = -ENODATA;
+-			return;
++			goto out_complete;
+ 		}
+ 
+ 		battmgr->error = le32_to_cpu(resp->intval.result);
