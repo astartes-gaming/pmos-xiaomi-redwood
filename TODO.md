@@ -37,7 +37,7 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
 
 ## Hardware not started
 
-- ⬜ IR blaster
+- 🔧 IR blaster: ir-spi LED on spi15 (kernel r124 adds RC_CORE/LIRC/IR_SPI)
 - ⬜ NFC (nq@28 on i2c9 in the stock DT)
 - ⬜ Fingerprint reader (side key) — likely hard
 - ⬜ USB-C: host mode, video out if supported, role switching

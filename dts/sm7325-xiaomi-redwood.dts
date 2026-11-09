@@ -10,7 +10,7 @@
  * Enabled: simple-framebuffer (early boot), DSI panel (M20 42 0d 0b), GPU, Wi-Fi (WPSS),
  * speakers (ADSP + AW88261), battery (pmic-glink battmgr), vibration (AW86927), sensors (ADSP SSC via hexagonrpcd: BMI3x0, STK3A5x, AK991x), Bluetooth (WCN6750 on uart7),
  * microphones (WCD938x: AMIC1 main, AMIC5 secondary), UFS, USB networking,
- * modem (MPSS + IPA), buttons, touchscreen. Not yet enabled: PM7325B
+ * modem (MPSS + IPA), IR blaster, buttons, touchscreen. Not yet enabled: PM7325B
  * USB-C role switching, headset detection, CDSP.
  */
 
@@ -1052,6 +1052,18 @@
 
 		pinctrl-0 = <&ts_irq>, <&ts_reset>;
 		pinctrl-names = "default";
+	};
+};
+
+&spi15 {
+	status = "okay";
+
+	/* IR blaster: IR LED driven by SPI (vendor: ir-spi@0 on qupv3_se15_spi) */
+	irled@0 {
+		compatible = "ir-spi-led";
+		reg = <0>;
+
+		spi-max-frequency = <19200000>;
 	};
 };
 
