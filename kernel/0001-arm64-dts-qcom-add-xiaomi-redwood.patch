@@ -1886,7 +1886,21 @@ index 643b8e2..019a1aa 100644
 diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
 --- a/drivers/power/supply/qcom_battmgr.c
 +++ b/drivers/power/supply/qcom_battmgr.c
-@@ -1388,7 +1388,7 @@
+@@ -1374,7 +1374,7 @@
+ 	unsigned int val;
+ 
+ 	if (payload_len < sizeof(__le32)) {
+-		dev_warn(battmgr->dev, "invalid payload length for %#x: %zd\n",
++		dev_warn_once(battmgr->dev, "invalid payload length for %#x: %zd\n",
+ 			 opcode, len);
+ 		return;
+ 	}
+@@ -1384,19 +1384,19 @@
+ 		property = le32_to_cpu(resp->intval.property);
+ 		if (property == BATT_MODEL_NAME) {
+ 			if (payload_len != sizeof(resp->strval)) {
+-				dev_warn(battmgr->dev,
++				dev_warn_once(battmgr->dev,
  					 "invalid payload length for BATT_MODEL_NAME request: %zd\n",
  					 payload_len);
  				battmgr->error = -ENODATA;
@@ -1895,7 +1909,8 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  			}
  		} else {
  			if (payload_len != sizeof(resp->intval)) {
-@@ -1396,7 +1396,7 @@
+-				dev_warn(battmgr->dev,
++				dev_warn_once(battmgr->dev,
  					 "invalid payload length for %#x request: %zd\n",
  					 property, payload_len);
  				battmgr->error = -ENODATA;
@@ -1904,7 +1919,12 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  			}
  
  			battmgr->error = le32_to_cpu(resp->intval.result);
-@@ -1487,7 +1487,7 @@
+@@ -1483,11 +1483,11 @@
+ 	case BATTMGR_USB_PROPERTY_GET:
+ 		property = le32_to_cpu(resp->intval.property);
+ 		if (payload_len != sizeof(resp->intval)) {
+-			dev_warn(battmgr->dev,
++			dev_warn_once(battmgr->dev,
  				 "invalid payload length for %#x request: %zd\n",
  				 property, payload_len);
  			battmgr->error = -ENODATA;
@@ -1913,7 +1933,12 @@ diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_bat
  		}
  
  		battmgr->error = le32_to_cpu(resp->intval.result);
-@@ -1528,7 +1528,7 @@
+@@ -1524,11 +1524,11 @@
+ 	case BATTMGR_WLS_PROPERTY_GET:
+ 		property = le32_to_cpu(resp->intval.property);
+ 		if (payload_len != sizeof(resp->intval)) {
+-			dev_warn(battmgr->dev,
++			dev_warn_once(battmgr->dev,
  				 "invalid payload length for %#x request: %zd\n",
  				 property, payload_len);
  			battmgr->error = -ENODATA;

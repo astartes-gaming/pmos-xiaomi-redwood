@@ -22,5 +22,10 @@ body, n = re.subn(r"(battmgr->error = -ENODATA;\n\t+)return;",
                   r"\1goto out_complete;", s[start:end])
 if n != 4:
     sys.exit(f"expected 4 bad-length returns, found {n}")
+# These replies repeat on every poll (upower): warn once, not every second.
+body, m = re.subn(r"dev_warn\(battmgr->dev,(\s*\"invalid payload length for)",
+                  r"dev_warn_once(battmgr->dev,\1", body)
+if m < 4:
+    sys.exit(f"expected >=4 payload-length warnings, found {m}")
 open(p, "w").write(s[:start] + body + s[end:])
-print("qcom_battmgr: bad-length replies now complete the request")
+print(f"qcom_battmgr: bad-length replies complete the request; {m} warnings once-only")
