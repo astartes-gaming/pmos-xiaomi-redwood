@@ -3,7 +3,7 @@
 pkgname=device-xiaomi-redwood
 pkgdesc="Xiaomi POCO X5 Pro 5G / Redmi Note 12 Pro Speed"
 pkgver=1
-pkgrel=14
+pkgrel=15
 url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
@@ -37,6 +37,7 @@ source="
 	redwood-usb-reset.timer
 	redwood-usb-replug.service
 	71-redwood-usb-replug.rules
+	72-redwood-bt-nowake.rules
 	81-libssc-xiaomi-redwood.rules
 	90_redwood-cbd.gschema.override
 	70-redwood-lirc.rules
@@ -70,6 +71,10 @@ package() {
 		"$srcdir"/redwood-usb-reset.service "$srcdir"/redwood-usb-reset.timer \
 		"$srcdir"/redwood-usb-replug.service
 	install -Dm644 "$srcdir"/71-redwood-usb-replug.rules \
+		-t "$pkgdir"/usr/lib/udev/rules.d
+
+	# Suspend: the Bluetooth UART wake IRQ aborts every suspend attempt
+	install -Dm644 "$srcdir"/72-redwood-bt-nowake.rules \
 		-t "$pkgdir"/usr/lib/udev/rules.d
 	mkdir -p "$pkgdir"/usr/lib/systemd/system/timers.target.wants
 	ln -s ../redwood-usb-reset.timer \
@@ -105,6 +110,7 @@ c0634ddd66ecfe4b39e8bff0b17ea141303d8827d7d498c2a9f19729566f0d5a3900c78ac8c71e8e
 819bed171296a112b1a4ac64379696e70473b8aa349692215bf53faccd3be07620adbc167cae5f91cfabff7ce67a15f9848a11460404e3c3fc33b713e364b0aa  redwood-usb-reset.timer
 57bbf2158d0e31652e782038c865496185de2bf1f64ecbbb5b2291397ee6e30d6a525d16c296f6bf5fdec61d746da5758e930cd1a9a7aa233a85a273a09a48a9  redwood-usb-replug.service
 b15ee7547b6b5189e6fad6b4744677240daa1925d3c363eb8e33203bb751cb98a4ebee6ce6b991bfa7ab15f9a6ce64fa2cc525e18750102b1a2ecde7a41eefe9  71-redwood-usb-replug.rules
+7305c0195a335b8b33fa84b65c54a0c16be60dd4448c7d6935f3fad939f962f424883863c7f919c7826c7e1b91f482860ad7043817632444b7af27571dcbbce6  72-redwood-bt-nowake.rules
 0f060e9bd7834ce9962e3e32dcd3d5276b7381e55fe10782282e235f56661741134915c63cdbc541a3a94b63c262c70038890aae01bbc82582007d7480fea2de  81-libssc-xiaomi-redwood.rules
 0360050ba16732556269426717d9637cd69a6690be0fc756e3894acfbb7fbe7c3f3b6b6a076fcd04816d024cc2c5a99fe564cc52298d296e6350c738fcdab409  90_redwood-cbd.gschema.override
 7080344c5c40f7f8ef244c8470a7aac7d1d1ed4f81dc9d0d734b299fc33b08570bc86ff1700c8f315590893e99a2a57d1255387ce741f0d4099187f1c28b2e76  70-redwood-lirc.rules

@@ -43,7 +43,13 @@ Status of the port, roughly in priority order. ✅ done · 🔧 in progress · �
     PulseAudio (postmarketos-base-ui-audio-backend-pulseaudio)
   - ⬜ Headset mic (AMIC2): needs a headset with a mic
   - ⬜ Pop/static when playback stops
-- ⬜ **Suspend / battery life**: sleep, wake on call/SMS
+- 🔧 **Suspend / battery life**: deep (PSCI) suspend works on r130/r15:
+  slept a full 20 s / 60 s with all CPUs off and resumed cleanly. The
+  blocker was the Bluetooth UART (99c000.serial) wake IRQ aborting every
+  attempt ("Wakeup pending. Abort CPU freeze"); device r15 disables its
+  wakeup via udev. Kernel r130 has PM_DEBUG / PM_SLEEP_DEBUG.
+  - ⬜ Needs you: power button wake from deep sleep (first try: no wake)
+  - ⬜ wake on call/SMS, battery drain
 
 ## Hardware not started
 

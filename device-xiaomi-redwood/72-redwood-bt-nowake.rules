@@ -1,0 +1,4 @@
+# The Bluetooth UART (uart7, WCN6750) wake IRQ fires as soon as the system
+# suspends ("Wakeup pending. Abort CPU freeze"), so suspend never sticks.
+# Bluetooth keeps working; it just can't wake the phone.
+ACTION=="add", SUBSYSTEM=="platform", KERNEL=="99c000.serial", ATTR{power/wakeup}="disabled"
